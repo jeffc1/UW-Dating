@@ -1,6 +1,7 @@
 // install Gradle jvm tasks
 plugins {
     kotlin("jvm") version "1.9.21"
+    id("application")
 }
 
 // product release info
@@ -24,4 +25,8 @@ tasks.test {
 // version of Java to use
 kotlin {
     jvmToolchain(17)
+}
+
+application {
+    mainClass = "org.example.MainKt"
 }
