@@ -10,4 +10,4 @@ Release Version 0.1.0
 - main page: https://git.uwaterloo.ca/j37chiu1/team-101-6/-/issues/2
 
 
-- installer (apk) was generated on February 16. Link:[](https://git.uwaterloo.ca/j37chiu1/team-101-6/-/blob/main/app-debug.apk)
+- installer (apk) was generated on February 16. [Link](https://git.uwaterloo.ca/j37chiu1/team-101-6/-/blob/main/app-debug.apk)
