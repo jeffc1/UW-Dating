@@ -50,6 +50,7 @@ fun MainScreen() {
             when (currentScreen) {
                 Screen.Home -> MainContent()
                 Screen.Chat -> ChatScreen()
+                Screen.Likes -> LikesScreen { /* Handle likes screen */ }
                 Screen.Preferences -> PreferencesScreen { /* Handle Preference Screen navigation */ }
             }
         }
@@ -77,6 +78,12 @@ fun BottomNavigationBar(currentScreen: Screen, onNavigationItemSelected: (Screen
             selected = currentScreen == Screen.Preferences,
             onClick = { onNavigationItemSelected(Screen.Preferences) }
         )
+        BottomNavigationItem(
+            icon = { Icon(Icons.Default.Settings, contentDescription = "Likes") },
+            label = { Text("Likes") },
+            selected = currentScreen == Screen.Likes,
+            onClick = { onNavigationItemSelected(Screen.Likes) }
+        )
     }
 }
 
@@ -86,7 +93,7 @@ fun Icon(chat: Screen, contentDescription: String) {
 }
 
 enum class Screen {
-    Home, Chat, Preferences
+    Home, Chat, Preferences, Likes
 }
 @Composable
 fun ChatScreen() {
@@ -350,6 +357,55 @@ fun PreferencesScreenPreview() {
     PreferencesScreen(onNavigate = {})
 }
 
+// RILEY'S STUFF 
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun LikesScreen(onNavigate: (LikeType) -> Unit) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Likes", color = Color.Black) },
+//                backgroundColor = Color(0xFF000000) // Black
+            )
+        },
+        content = {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 8.dp)
+            ) {
+                LikeItem(title = "Books", summary = "Book1, Book2", onClick = { onNavigate(LikeType.Books) })
+                LikeItem(title = "Books", summary = "Harry Potter and the Philosopher's Stone", onClick = { onNavigate(LikeType.Books) })
+                LikeItem(title = "Movies", summary = "Guardians of the Galaxy Vol 3", onClick = { onNavigate(LikeType.Movies) })
+                LikeItem(title = "Sports", summary = "Swimming, biking", onClick = { onNavigate(LikeType.Sports) })
+                LikeItem(title = "Music", summary = "Taylor Swift", onClick = { onNavigate(LikeType.Music) })
+                LikeItem(title = "Food", summary = "Sushi", onClick = { onNavigate(LikeType.Foods) })
+            }
+        }
+    )
+}
+
+@Composable
+fun LikeItem(title: String, summary: String, onClick: () -> Unit) {
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .clickable(onClick = onClick)
+        .padding(16.dp)) {
+        Text(title, fontWeight = FontWeight.Bold)
+        Text(summary, color = Color.Gray)
+    }
+}
+
+enum class LikeType {
+    Books, Movies, Sports, Music, Foods
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LikesScreenPreview() {
+    LikesScreen(onNavigate = {})
+}
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
@@ -357,3 +413,4 @@ fun DefaultPreview() {
         MainScreen()
     }
 }
+
