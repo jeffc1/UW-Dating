@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+
 android {
     namespace = "com.example.uwrizz"
     compileSdk = 34
@@ -63,4 +64,6 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+    implementation ("androidx.recyclerview:recyclerview:1.2.1")
+    implementation("androidx.compose.material:material:1.6.1")
 }
