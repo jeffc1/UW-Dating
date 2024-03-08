@@ -26,10 +26,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -126,6 +128,7 @@ fun LoginScreen(context: Context, onLoginSuccess: () -> Unit) {
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
+            visualTransformation = PasswordVisualTransformation(),
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -271,7 +274,6 @@ fun ChatScreen() {
     }
 }
 
-
 @Composable
 fun InputBar(
     textState: TextFieldValue,
@@ -339,9 +341,6 @@ fun MainContent() {
             ScrollableCard()
             XButton()
         }
-        Spacer(modifier = Modifier.weight(1f))
-
-//        BottomButtonRow()
     }
 }
 
@@ -357,42 +356,6 @@ fun XButton() {
 }
 
 @Composable
-fun BottomButtonRow(modifier: Modifier = Modifier) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(56.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        // Add your buttons here
-        Button(
-            onClick = { /* Handle button click */ },
-            modifier = Modifier.weight(1f)
-        ) {
-            Text("B1")
-        }
-        Button(
-            onClick = { /* Handle button click */ },
-            modifier = Modifier.weight(1f)
-        ) {
-            Text("B2")
-        }
-        Button(
-            onClick = { /* Handle button click */ },
-            modifier = Modifier.weight(1f)
-        ) {
-            Text("B3")
-        }
-        Button(
-            onClick = { /* Handle button click */ },
-            modifier = Modifier.weight(1f)
-        ) {
-            Text("B4")
-        }
-    }
-}
-
-@Composable
 fun ScrollableCard() {
     LazyColumn(
         modifier = Modifier
@@ -400,37 +363,128 @@ fun ScrollableCard() {
     ) {
         // Larger square card at the bottom for a photo
         item {
-            LargeSquareCard()
-            LargeSquareCard()
-            LargeSquareCard()
-            LargeSquareCard()
-            LargeSquareCard()
-            LargeSquareCard()
-            LargeSquareCard()
-            LargeSquareCard()
-            LargeSquareCard()
-            LargeSquareCard()
-
+            InfoCard("Studying", "💻","CompEng")
+            InfoCard("Fav Sport", "🎾", "Tennis :)")
+            CustomCard("A typical sunday", "running 5 marathons in 5 countries")
+            CustomCard("Green flags I look for", "loving Netflix!")
         }
     }
 }
 
+
 @Composable
-fun LargeSquareCard() {
+fun CustomCard(title: String, content: String) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
         ),
         modifier = Modifier
             .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // Title (left-justified, not bold)
+            Text(
+                text = title,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(bottom = 8.dp),
+                textAlign = TextAlign.Start,
+                fontWeight = FontWeight.Normal, // Not bold
+                fontSize = 10.sp
+            )
+
+            // Content (left-justified, bold, bigger)
+            Text(
+                text = content,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(bottom = 16.dp),
+                textAlign = TextAlign.Start,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp // Adjust the size as needed
+            )
+
+            // Heart emoji button (bottom right)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(top = 8.dp)
+                    .align(Alignment.End)
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                IconButton(
+                    onClick = {
+                        // Add your onClick logic here for the heart button
+                    }
+                ) {
+                    Text("❤️") // Heart emoji
+                }
+            }
+        }
+    }
+}
+@Composable
+fun InfoCard(
+    topText: String,
+    emoji: String,
+    bottomText: String
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
+        modifier = Modifier
             .padding(5.dp)
     ) {
-        Text(
-            text = "Testing",
+        Column(
             modifier = Modifier
-                .padding(30.dp),
-            textAlign = TextAlign.Center,
-        )
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // Text at the top, horizontally centered
+            Text(
+                text = topText,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .align(Alignment.CenterHorizontally),
+                textAlign = TextAlign.Center
+            )
+
+            // Big emoji in the middle, horizontally centered
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(16.dp)
+                    .align(Alignment.CenterHorizontally)
+            ) {
+                Text(
+                    text = emoji,
+                    fontSize = 40.sp,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                )
+            }
+
+            // Text at the bottom, horizontally centered
+            Text(
+                text = bottomText,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .align(Alignment.CenterHorizontally),
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
