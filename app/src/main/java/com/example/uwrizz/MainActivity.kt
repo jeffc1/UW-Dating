@@ -35,11 +35,13 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.booleanPreferencesKey
-
+import com.example.uwrizz.ProfileSettingsScreen
+import com.example.uwrizz.PreferencesPage
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.datastore.preferences.core.Preferences
-
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import com.example.uwrizz.ui.theme.UWRizzTheme
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
@@ -174,8 +176,24 @@ Log.e("checking here :", ""+isLoggedIn)
                 when (currentScreen) {
                     Screen.Home -> MainContent()
                     Screen.Chat -> ChatScreen()
-                    Screen.Likes -> LikesScreen { /* Handle likes screen */ }
-                    Screen.Preferences -> PreferencesScreen { /* Handle Preference Screen navigation */ }
+                    Screen.Likes -> LikesScreen(){ }
+                    Screen.Profile -> ProfileSettingsScreen(
+                        profileImage = ImageVector.vectorResource(R.drawable.ic_head), // Replace with your actual default image resource
+                        onImageClick = {
+                            // Define what happens when the "add image" button is clicked
+                            // For example, opening a gallery or a photo picker
+                        },
+                        onNavigateToPreferences = {
+                            // Define what happens when "Edit Preferences" button is clicked
+                            // E.g., updating the state to navigate to the preferences screen
+                            currentScreen = Screen.Preferences
+                        },
+                        onImageSelected = { uri ->
+                            // Here you can handle the selected image URI.
+                            // For example, updating the UI state or uploading the image to a server.
+                        }
+                    )
+                    Screen.Preferences -> PreferencesPage(paddingValues = PaddingValues())
                 }
             }
         }
@@ -230,7 +248,7 @@ fun Icon(chat: Screen, contentDescription: String) {
 }
 
 enum class Screen {
-    Home, Chat, Preferences, Likes
+    Home, Chat, Likes, Profile, Preferences
 }
 
 @Composable
@@ -520,7 +538,7 @@ fun PreferencesScreen(onNavigate: (PreferenceType) -> Unit) {
                 PreferenceItem(
                     title = "I'm interested in",
                     summary = "Women",
-                    onClick = { onNavigate(PreferenceType.Interest) })
+                     onClick = { onNavigate(PreferenceType.Interest) })
                 PreferenceItem(
                     title = "Program",
                     summary = "Not Engineering",
