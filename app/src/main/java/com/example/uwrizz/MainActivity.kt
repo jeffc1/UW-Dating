@@ -228,17 +228,18 @@ fun BottomNavigationBar(currentScreen: Screen, onNavigationItemSelected: (Screen
             onClick = { onNavigationItemSelected(Screen.Chat) }
         )
         BottomNavigationItem(
-            icon = { Icon(Icons.Default.Settings, contentDescription = "Preferences") },
-            label = { Text("Preferences") },
-            selected = currentScreen == Screen.Preferences,
-            onClick = { onNavigationItemSelected(Screen.Preferences) }
-        )
-        BottomNavigationItem(
             icon = { Icon(Icons.Default.Settings, contentDescription = "Likes") },
             label = { Text("Likes") },
             selected = currentScreen == Screen.Likes,
             onClick = { onNavigationItemSelected(Screen.Likes) }
         )
+        BottomNavigationItem(
+            icon = { Icon(Icons.Default.Settings, contentDescription = "Profile") },
+            label = { Text("Profile") },
+            selected = currentScreen == Screen.Profile,
+            onClick = { onNavigationItemSelected(Screen.Profile) }
+        )
+
     }
 }
 
