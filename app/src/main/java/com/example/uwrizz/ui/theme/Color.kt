@@ -2,6 +2,10 @@ package com.example.uwrizz.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+val Red = Color(0xFFE1474E)
+val LightGrey = Color(0xFFF1F1F1)
+val Yellow = Color(0xFFFFD64E)
+
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
 val Pink80 = Color(0xFFEFB8C8)

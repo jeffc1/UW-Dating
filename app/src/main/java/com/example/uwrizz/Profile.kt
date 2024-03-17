@@ -35,10 +35,7 @@ import androidx.compose.material.DropdownMenuItem
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
-
-
-
-
+import coil.compose.rememberAsyncImagePainter
 
 
 import com.example.uwrizz.R
@@ -106,7 +103,7 @@ fun ProfileSettingsScreen(
         ) {
             imageUri?.let {
                 Image(
-                    painter = rememberImagePainter(it),
+                    painter = rememberAsyncImagePainter(it),
                     contentDescription = "Profile picture",
                     modifier = Modifier.size(120.dp),
                     contentScale = ContentScale.Crop

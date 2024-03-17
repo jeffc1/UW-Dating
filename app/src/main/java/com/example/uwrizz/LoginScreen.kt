@@ -10,29 +10,90 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.painterResource
+import androidx.compose.runtime.Composable
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.example.uwrizz.ui.theme.Red
+import com.example.uwrizz.ui.theme.Typography
+import com.example.uwrizz.ui.theme.interFamily
+
+
+@Composable
+fun GeeseApprovedDating() {
+    Row(modifier = Modifier.padding(bottom = 5.dp), horizontalArrangement = Arrangement.spacedBy((-8).dp)) {
+        Text(
+            text = "Geese Approved ",
+            style = TextStyle(
+                fontFamily = interFamily,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = -2.sp,
+            ),
+            color = Color.Black,
+            fontSize = 32.sp,
+            modifier = Modifier.padding(end = 8.dp)
+        )
+        Text(
+            text = "Dating.",
+            style = TextStyle(
+                fontFamily = interFamily,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = -2.sp,
+            ),
+            color = Red,
+            fontSize = 32.sp
+        )
+    }
+}
 
 @Composable
 fun LoginScreen(context: Context, onLoginSuccess: () -> Unit) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val userDatabaseHelper = remember { UserDatabaseHelper(context) }
+    val logo = painterResource(R.drawable.uwrizzlogo)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top
     ) {
-        TextField(
+        Spacer(modifier = Modifier.height(32.dp))
+        Image(
+            painter = logo,
+            contentDescription = "Uwrizz Logo",
+            modifier = Modifier
+                .size(200.dp)
+                .align(Alignment.CenterHorizontally)
+        )
+        GeeseApprovedDating()
+        Text(
+            text = "uWaterloo's very own dating app.",
+            style = TextStyle(
+                fontFamily = interFamily,
+                fontWeight = FontWeight.Normal,
+                letterSpacing = 0.sp,
+            ),
+            color = Color.Black,
+            fontSize = 16.sp
+        )
+        Spacer(modifier = Modifier.height(40.dp))
+        // ------------------
+        // username password.
+        OutlinedTextField(
             value = username,
             onValueChange = { username = it },
             label = { Text("Username") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
-        Spacer(modifier = Modifier.height(8.dp))
-        TextField(
+        Spacer(modifier = Modifier.height(20.dp))
+        OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
@@ -41,7 +102,8 @@ fun LoginScreen(context: Context, onLoginSuccess: () -> Unit) {
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = {
+        Button(
+            onClick = {
             Log.d("LoginScreen", "Button clicked with username: $username and password: $password")
             // Here you would validate the username and password
             val isValidUser = userDatabaseHelper.validateUser(username, password)
@@ -53,7 +115,12 @@ fun LoginScreen(context: Context, onLoginSuccess: () -> Unit) {
                 // Optionally, show an error message to the user
             }
         }) {
-            Text("Log in")
+            Text(
+                text = "Log in",
+                fontSize = 20.sp
+            )
         }
     }
 }
+
+

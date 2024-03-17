@@ -17,12 +17,17 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.googlefonts.GoogleFont
 import com.example.uwrizz.ui.theme.UWRizzTheme
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
@@ -38,7 +43,6 @@ private const val USER_PREFERENCES_NAME = "com.example.uwrizz"
 
 // The dataStore by delegate
 private val Context.dataStore by preferencesDataStore(name = USER_PREFERENCES_NAME)
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -97,7 +101,7 @@ fun MainScreen() {
         }
         .collectAsState(initial = false).value
 Log.e("checking here :", ""+isLoggedIn)
-    if (isLoggedIn) {
+    if (isLoggedIn) { // fix here after -------------------------------------------------------------------------------------------------
         var currentScreen by remember { mutableStateOf(Screen.Home) }
         Scaffold(
             bottomBar = { BottomNavigationBar(currentScreen, onNavigationItemSelected = { screen -> currentScreen = screen }) }
@@ -143,35 +147,88 @@ Log.e("checking here :", ""+isLoggedIn)
 
 
 @Composable
-fun BottomNavigationBar(currentScreen: Screen, onNavigationItemSelected: (Screen) -> Unit) {
-    BottomNavigation {
+fun BottomNavigationBar(
+    currentScreen: Screen,
+    onNavigationItemSelected: (Screen) -> Unit
+) {
+    BottomNavigation(
+        backgroundColor = Color(0xFF808080)
+    ) {
+        val lightGrey = Color(0xFFA8A8A8)
+        val selectedColor = Color(0xFFFFD64E) // Change to your desired color for selected items
+
         BottomNavigationItem(
-            icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
-            label = { Text("Home") },
+            icon = {
+                Icon(
+                    Icons.Filled.Home,
+                    contentDescription = "Home",
+                    tint = if (currentScreen == Screen.Home) selectedColor else lightGrey
+                )
+            },
+            label = {
+                Text(
+                    "Home",
+                    color = if (currentScreen == Screen.Home) selectedColor else lightGrey
+                )
+            },
             selected = currentScreen == Screen.Home,
             onClick = { onNavigationItemSelected(Screen.Home) }
         )
         BottomNavigationItem(
-            icon = { Icon(Screen.Chat, contentDescription = "Chat") },
-            label = { Text("Chat") },
+            icon = {
+                Icon(
+                    ImageVector.vectorResource(id = R.drawable.ic_chat),
+                    contentDescription = "Chat",
+                    tint = if (currentScreen == Screen.Chat) selectedColor else lightGrey
+                )
+            },
+            label = {
+                Text(
+                    "Chat",
+                    color = if (currentScreen == Screen.Chat) selectedColor else lightGrey
+                )
+            },
             selected = currentScreen == Screen.Chat,
             onClick = { onNavigationItemSelected(Screen.Chat) }
         )
         BottomNavigationItem(
-            icon = { Icon(Icons.Default.Settings, contentDescription = "Likes") },
-            label = { Text("Likes") },
+            icon = {
+                Icon(
+                    Icons.Default.Settings,
+                    contentDescription = "Likes",
+                    tint = if (currentScreen == Screen.Likes) selectedColor else lightGrey
+                )
+            },
+            label = {
+                Text(
+                    "Likes",
+                    color = if (currentScreen == Screen.Likes) selectedColor else lightGrey
+                )
+            },
             selected = currentScreen == Screen.Likes,
             onClick = { onNavigationItemSelected(Screen.Likes) }
         )
         BottomNavigationItem(
-            icon = { Icon(Icons.Default.Settings, contentDescription = "Profile") },
-            label = { Text("Profile") },
+            icon = {
+                Icon(
+                    Icons.Default.Settings,
+                    contentDescription = "Profile",
+                    tint = if (currentScreen == Screen.Profile) selectedColor else lightGrey
+                )
+            },
+            label = {
+                Text(
+                    "Profile",
+                    color = if (currentScreen == Screen.Profile) selectedColor else lightGrey
+                )
+            },
             selected = currentScreen == Screen.Profile,
             onClick = { onNavigationItemSelected(Screen.Profile) }
         )
-
     }
 }
+
+
 
 fun Icon(chat: Screen, contentDescription: String) {
 
