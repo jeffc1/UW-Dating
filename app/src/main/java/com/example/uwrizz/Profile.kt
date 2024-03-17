@@ -23,11 +23,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.compose.material.Scaffold
-import androidx.compose.material.TopAppBar
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContracts
 import coil.compose.rememberImagePainter
@@ -37,9 +33,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.compose.NavHost
+import androidx.compose.ui.res.vectorResource
 import com.example.uwrizz.R
 
 
@@ -289,24 +283,33 @@ fun ImageUploadButton(
     }
 }
 @Composable
-fun PreferencesScreen(navController: NavController) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Preferences") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        },
-        content = {
-            // Your preferences content goes here
-            Text("This is the Preferences Screen", style = MaterialTheme.typography.h5)
+fun PreferencesScreen(
+    onNavigateToProfile: () -> Unit
+) {
+    val scrollState = rememberScrollState()
+    Column(
+        modifier = Modifier
+            .verticalScroll(scrollState) // This adds the scrolling behavior
+            .fillMaxHeight() // This makes the Column fill the available height
+            .padding(16.dp) // Replace with your desired padding
+    ) {
+        Spacer(Modifier.weight(1f)) // This is used for layout purposes
+        Button(
+            onClick = onNavigateToProfile,
+            modifier = Modifier
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) { // Align icon and text vertically
+                Icon(
+                    ImageVector.vectorResource(id = R.drawable.ic_arrow), // Replace with your icon's resource ID
+                    contentDescription = "Edit Profile" // Accessibility description
+                )
+                Spacer(Modifier.width(4.dp)) // Add some spacing between the icon and the text
+                Text("Profile") // Text following the icon
+            }
         }
-    )
+    }
 }
+
 
 
 

@@ -130,7 +130,13 @@ Log.e("checking here :", ""+isLoggedIn)
                             // For example, updating the UI state or uploading the image to a server.
                         }
                     )
-                    Screen.Preferences -> PreferencesScreen(navController)
+                    Screen.Preferences -> PreferencesScreen(
+                        onNavigateToProfile = {
+                        // Define what happens when "Edit Preferences" button is clicked
+                        // E.g., updating the state to navigate to the preferences screen
+                        currentScreen = Screen.Profile
+                    }
+                    )
                 }
             }
         }
