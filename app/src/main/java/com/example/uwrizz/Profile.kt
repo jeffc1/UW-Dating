@@ -23,6 +23,11 @@ import androidx.compose.material.ButtonDefaults
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.material.Scaffold
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.icons.filled.ArrowBack
 import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContracts
 import coil.compose.rememberImagePainter
@@ -35,9 +40,6 @@ import androidx.compose.material.DropdownMenuItem
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
-import coil.compose.rememberAsyncImagePainter
-
-
 import com.example.uwrizz.R
 
 
@@ -92,6 +94,20 @@ fun ProfileSettingsScreen(
             .fillMaxHeight() // This makes the Column fill the available height
             .padding(16.dp) // Replace with your desired padding
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth() // Fill the width of the parent to allow the Spacer to push the button to the right
+                .padding(bottom = 16.dp), //
+            verticalAlignment = Alignment.Top // Align items to the top
+        ) {
+            Spacer(Modifier.weight(1f)) // This pushes the button to the right
+            Button(
+                onClick = onNavigateToPreferences,
+                modifier = Modifier
+            ) {
+                Text("Edit Preferences")
+            }
+        }
         // Profile picture
         Box(
             contentAlignment = Alignment.Center,
@@ -103,13 +119,13 @@ fun ProfileSettingsScreen(
         ) {
             imageUri?.let {
                 Image(
-                    painter = rememberAsyncImagePainter(it),
+                    painter = rememberImagePainter(it),
                     contentDescription = "Profile picture",
                     modifier = Modifier.size(120.dp),
                     contentScale = ContentScale.Crop
                 )
             } ?: Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_head), // Placeholder icon resource
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_headc), // Placeholder icon resource
                 contentDescription = "Profile picture",
                 modifier = Modifier.size(120.dp)
             )
@@ -223,19 +239,10 @@ fun ProfileSettingsScreen(
             label = { Text("Work") },
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
         )
-
-
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Button(
-            onClick = onNavigateToPreferences,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        ) {
-            Text("Edit Preferences")
-        }
     }
 }
+
+
 
 enum class ImageSource {
     Gallery,
@@ -281,10 +288,28 @@ fun ImageUploadButton(
         )
     }
 }
-
-
-
 @Composable
-fun PreferencesPage(paddingValues: PaddingValues ) {
-    // ...
+fun PreferencesScreen(navController: NavController) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Preferences") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        },
+        content = {
+            // Your preferences content goes here
+            Text("This is the Preferences Screen", style = MaterialTheme.typography.h5)
+        }
+    )
 }
+
+
+
+
+
+
