@@ -23,7 +23,6 @@ import androidx.compose.material.ButtonDefaults
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.compose.material.icons.filled.Edit
 import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContracts
 import coil.compose.rememberImagePainter
@@ -33,7 +32,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
-import androidx.compose.ui.res.vectorResource
 import com.example.uwrizz.R
 
 
@@ -94,35 +92,38 @@ fun ProfileSettingsScreen(
                 .padding(bottom = 16.dp), //
             verticalAlignment = Alignment.Top // Align items to the top
         ) {
+            // Profile picture
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(118.dp)
+                    .clip(CircleShape)
+                    .border(2.dp, Color.Gray, CircleShape)
+                    .clickable { galleryLauncher.launch("image/*") } // Launch the gallery
+            ) {
+                imageUri?.let {
+                    Image(
+                        painter = rememberImagePainter(it),
+                        contentDescription = "Profile picture",
+                        modifier = Modifier.size(120.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                } ?: Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_headc), // Placeholder icon resource
+                    contentDescription = "Profile picture",
+                    modifier = Modifier.size(120.dp)
+                )
+            }
+
             Spacer(Modifier.weight(1f)) // This pushes the button to the right
+
+            // Edit Preferences button
             Button(
                 onClick = onNavigateToPreferences,
                 modifier = Modifier
             ) {
                 Text("Edit Preferences")
             }
-        }
-        // Profile picture
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(118.dp)
-                .clip(CircleShape)
-                .border(2.dp, Color.Gray, CircleShape)
-                .clickable { galleryLauncher.launch("image/*") } // Launch the gallery
-        ) {
-            imageUri?.let {
-                Image(
-                    painter = rememberImagePainter(it),
-                    contentDescription = "Profile picture",
-                    modifier = Modifier.size(120.dp),
-                    contentScale = ContentScale.Crop
-                )
-            } ?: Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_headc), // Placeholder icon resource
-                contentDescription = "Profile picture",
-                modifier = Modifier.size(120.dp)
-            )
         }
 
         Spacer(modifier = Modifier.height(15.dp))
@@ -282,6 +283,8 @@ fun ImageUploadButton(
         )
     }
 }
+
+//Preference page
 @Composable
 fun PreferencesScreen(
     onNavigateToProfile: () -> Unit
