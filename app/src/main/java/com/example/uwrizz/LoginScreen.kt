@@ -13,7 +13,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -82,7 +85,7 @@ fun LoginScreen(context: Context, onLoginSuccess: () -> Unit) {
             color = Color.Black,
             fontSize = 16.sp
         )
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.weight(1f))
         // ------------------
         // username password.
         OutlinedTextField(
@@ -92,7 +95,7 @@ fun LoginScreen(context: Context, onLoginSuccess: () -> Unit) {
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -100,6 +103,13 @@ fun LoginScreen(context: Context, onLoginSuccess: () -> Unit) {
             visualTransformation = PasswordVisualTransformation(),
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        ClickableText(
+            text = AnnotatedString("Forgot password?"),
+            onClick = {
+
+            }
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(
@@ -114,12 +124,24 @@ fun LoginScreen(context: Context, onLoginSuccess: () -> Unit) {
                 Log.d("LoginScreen", "Login failed")
                 // Optionally, show an error message to the user
             }
-        }) {
+        },
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text(
                 text = "Log in",
                 fontSize = 20.sp
             )
         }
+        Spacer(modifier = Modifier.weight(2f))
+        Text(
+            text = "Don't have an account? "
+        )
+        ClickableText(
+            text = AnnotatedString("Sign Up", spanStyle = SpanStyle(color = Color.Red)),
+            onClick = {
+                // Handle click action here
+            }
+        )
     }
 }
 

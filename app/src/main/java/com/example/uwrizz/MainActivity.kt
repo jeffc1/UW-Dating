@@ -101,7 +101,7 @@ fun MainScreen() {
         }
         .collectAsState(initial = false).value
 Log.e("checking here :", ""+isLoggedIn)
-    if (isLoggedIn) { // fix here after -------------------------------------------------------------------------------------------------
+    if (true) { // fix here after -------------------------------------------------------------------------------------------------
         var currentScreen by remember { mutableStateOf(Screen.Home) }
         Scaffold(
             bottomBar = { BottomNavigationBar(currentScreen, onNavigationItemSelected = { screen -> currentScreen = screen }) }
@@ -110,7 +110,7 @@ Log.e("checking here :", ""+isLoggedIn)
                 when (currentScreen) {
                     Screen.Home -> MainContent()
                     Screen.Chat -> ChatScreen()
-                    Screen.Likes -> LikesScreen(){ }
+                    Screen.Likes -> LikesScreen(exampleProfiles)
                     Screen.Profile -> ProfileSettingsScreen(
                         profileImage = ImageVector.vectorResource(R.drawable.ic_head), // Replace with your actual default image resource
                         onImageClick = {
@@ -155,7 +155,7 @@ fun BottomNavigationBar(
         backgroundColor = Color(0xFF808080)
     ) {
         val lightGrey = Color(0xFFA8A8A8)
-        val selectedColor = Color(0xFFFFD64E) // Change to your desired color for selected items
+        val selectedColor = Color.White // Change to your desired color for selected items
 
         BottomNavigationItem(
             icon = {
