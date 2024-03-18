@@ -91,7 +91,7 @@ fun ProfileSettingsScreen(
     var lastname by remember { mutableStateOf("") }
     var bio by remember { mutableStateOf("") }
     var hobby by remember { mutableStateOf("") }
-    var work by remember { mutableStateOf("") }
+    var job by remember { mutableStateOf("") }
     var age by remember { mutableStateOf(18f) } // Default initial age
     var showAgeSlider by remember { mutableStateOf(false) }
 
@@ -213,66 +213,79 @@ fun ProfileSettingsScreen(
             label = { Text("Bio") },
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
         )
-        OutlinedTextField(
-            value = selectedGender,
-            onValueChange = { /* ReadOnly TextField */ },
-            label = { Text("Gender") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-                .clickable { expandedGender = true },
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Filled.ArrowDropDown,
-                    contentDescription = "Dropdown",
-                    Modifier.clickable { expandedGender = true }
-                )
-            },
-            readOnly = true // Make TextField readonly
-        )
-        DropdownMenu(
-            expanded = expandedGender,
-            onDismissRequest = { expandedGender = false }
-        ) {
-            genderOptions.forEach { gender ->
-                DropdownMenuItem(onClick = {
-                    selectedGender = gender
-                    expandedGender = false
-                }) {
-                    Text(text = gender)
+
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(Alignment.Top)
+        ){
+            OutlinedTextField(
+                value = selectedGender,
+                onValueChange = { /* ReadOnly TextField */ },
+                label = { Text("Gender") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+                    .clickable { expandedGender = true },
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowDropDown,
+                        contentDescription = "Dropdown",
+                        Modifier.clickable { expandedGender = true }
+                    )
+                },
+                readOnly = true // Make TextField readonly
+            )
+            DropdownMenu(
+                expanded = expandedGender,
+                onDismissRequest = { expandedGender = false }
+            ) {
+                genderOptions.forEach { gender ->
+                    DropdownMenuItem(onClick = {
+                        selectedGender = gender
+                        expandedGender = false
+                    }) {
+                        Text(text = gender)
+                    }
                 }
             }
         }
-        OutlinedTextField(
-            value = selectedProgram,
-            onValueChange = { /* ReadOnly TextField */ },
-            label = { Text("Program") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-                .clickable { expandedProgram = true },
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Filled.ArrowDropDown,
-                    contentDescription = "Dropdown",
-                    Modifier.clickable { expandedProgram = true }
-                )
-            },
-            readOnly = true // Make TextField readonly
-        )
-        DropdownMenu(
-            expanded = expandedProgram,
-            onDismissRequest = { expandedProgram = false }
-        ) {
-            programOptions.forEach { program ->
-                DropdownMenuItem(onClick = {
-                    selectedProgram = program
-                    expandedProgram = false
-                }) {
-                    Text(text = program)
+
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(Alignment.Top)
+        ){
+            OutlinedTextField(
+                value = selectedProgram,
+                onValueChange = { /* ReadOnly TextField */ },
+                label = { Text("Program") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+                    .clickable { expandedProgram = true },
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowDropDown,
+                        contentDescription = "Dropdown",
+                        Modifier.clickable { expandedProgram = true }
+                    )
+                },
+                readOnly = true // Make TextField readonly
+            )
+            DropdownMenu(
+                expanded = expandedProgram,
+                onDismissRequest = { expandedProgram = false }
+            ) {
+                programOptions.forEach { program ->
+                    DropdownMenuItem(onClick = {
+                        selectedProgram = program
+                        expandedProgram = false
+                    }) {
+                        Text(text = program)
+                    }
                 }
             }
         }
+
         OutlinedTextField(
             value = hobby,
             onValueChange = { hobby = it },
@@ -280,9 +293,9 @@ fun ProfileSettingsScreen(
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
         )
         OutlinedTextField(
-            value = work,
-            onValueChange = { work = it },
-            label = { Text("Work") },
+            value = job,
+            onValueChange = { job = it },
+            label = { Text("Job") },
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
         )
         // Save button
@@ -309,7 +322,7 @@ data class UserProfile(
     val gender: String,
     val program: String,
     val hobby: String,
-    val work: String,
+    val Job: String,
     val profilePictureUri: String? // Store the URI of the profile picture
 )
 
@@ -402,67 +415,80 @@ fun PreferencesScreen(
 
         Spacer(modifier = Modifier.height(50.dp))
         Text("Preference Settings", style = MaterialTheme.typography.h5)
-        OutlinedTextField(
-            value = selectGender2,
-            onValueChange = { /* ReadOnly TextField */ },
-            label = { Text("I'm Interested In: ") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp)
-                .clickable { expandedGender2 = true },
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Filled.ArrowDropDown,
-                    contentDescription = "Dropdown",
-                    Modifier.clickable { expandedGender2 = true }
-                )
-            },
-            readOnly = true // Make TextField readonly
-        )
-        DropdownMenu(
-            expanded = expandedGender2,
-            onDismissRequest = { expandedGender2 = false }
-        ) {
-            genderoptions2.forEach { gender ->
-                DropdownMenuItem(onClick = {
-                    selectGender2 = gender
-                    expandedGender2 = false
-                }) {
-                    Text(text = gender)
+
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(Alignment.Top)
+        ){
+            OutlinedTextField(
+                value = selectGender2,
+                onValueChange = { /* ReadOnly TextField */ },
+                label = { Text("I'm Interested In: ") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .clickable { expandedGender2 = true },
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowDropDown,
+                        contentDescription = "Dropdown",
+                        Modifier.clickable { expandedGender2 = true }
+                    )
+                },
+                readOnly = true // Make TextField readonly
+            )
+            DropdownMenu(
+                expanded = expandedGender2,
+                onDismissRequest = { expandedGender2 = false }
+            ) {
+                genderoptions2.forEach { gender ->
+                    DropdownMenuItem(onClick = {
+                        selectGender2 = gender
+                        expandedGender2 = false
+                    }) {
+                        Text(text = gender)
+                    }
                 }
             }
         }
 
-        OutlinedTextField(
-            value = selectedProgram2,
-            onValueChange = { /* ReadOnly TextField */ },
-            label = { Text("I'm Interested In: ") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp)
-                .clickable { expandedProgram2 = true },
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Filled.ArrowDropDown,
-                    contentDescription = "Dropdown",
-                    Modifier.clickable { expandedProgram2 = true }
-                )
-            },
-            readOnly = true // Make TextField readonly
-        )
-        DropdownMenu(
-            expanded = expandedProgram2,
-            onDismissRequest = { expandedProgram2 = false }
-        ) {
-            programOptions2.forEach { program ->
-                DropdownMenuItem(onClick = {
-                    selectedProgram2 = program
-                    expandedProgram2 = false
-                }) {
-                    Text(text = program)
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(Alignment.Top)
+        ){
+            OutlinedTextField(
+                value = selectedProgram2,
+                onValueChange = { /* ReadOnly TextField */ },
+                label = { Text("I'm Interested In: ") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .clickable { expandedProgram2 = true },
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowDropDown,
+                        contentDescription = "Dropdown",
+                        Modifier.clickable { expandedProgram2 = true }
+                    )
+                },
+                readOnly = true // Make TextField readonly
+            )
+            DropdownMenu(
+                expanded = expandedProgram2,
+                onDismissRequest = { expandedProgram2 = false }
+            ) {
+                programOptions2.forEach { program ->
+                    DropdownMenuItem(onClick = {
+                        selectedProgram2 = program
+                        expandedProgram2 = false
+                    }) {
+                        Text(text = program)
+                    }
                 }
             }
         }
+
+
         AgeSelector(
             ageRange = 18f..30f, // This is the range of the slider
             initialAge = age, // Pass the initial age, it could be a state if you need to remember it
