@@ -31,7 +31,9 @@ import androidx.compose.ui.text.googlefonts.GoogleFont
 import com.example.uwrizz.ui.theme.UWRizzTheme
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
+import androidx.navigation.NavController
 import kotlinx.coroutines.flow.map
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.Dispatchers
 
 
@@ -92,6 +94,7 @@ fun MainScreen() {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val dataStore = context.dataStore
+    val navController = rememberNavController()
 
     // Use collectAsState to observe the isLoggedIn state
     val isLoggedIn = dataStore.data
@@ -127,7 +130,13 @@ Log.e("checking here :", ""+isLoggedIn)
                             // For example, updating the UI state or uploading the image to a server.
                         }
                     )
-                    Screen.Preferences -> PreferencesPage(paddingValues = PaddingValues())
+                    Screen.Preferences -> PreferencesScreen(
+                        onNavigateToProfile = {
+                        // Define what happens when "Edit Preferences" button is clicked
+                        // E.g., updating the state to navigate to the preferences screen
+                        currentScreen = Screen.Profile
+                    }
+                    )
                 }
             }
         }
@@ -194,7 +203,7 @@ fun BottomNavigationBar(
         BottomNavigationItem(
             icon = {
                 Icon(
-                    Icons.Default.Settings,
+                    ImageVector.vectorResource(id = R.drawable.ic_add),
                     contentDescription = "Likes",
                     tint = if (currentScreen == Screen.Likes) selectedColor else lightGrey
                 )
@@ -211,7 +220,7 @@ fun BottomNavigationBar(
         BottomNavigationItem(
             icon = {
                 Icon(
-                    Icons.Default.Settings,
+                    ImageVector.vectorResource(id = R.drawable.ic_head),
                     contentDescription = "Profile",
                     tint = if (currentScreen == Screen.Profile) selectedColor else lightGrey
                 )
