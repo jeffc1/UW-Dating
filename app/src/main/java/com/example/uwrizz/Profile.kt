@@ -25,9 +25,37 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-
+import androidx.compose.foundation.selection.selectable
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 import com.example.uwrizz.R
+
+//UserPreferenceViewModel, needs to be changed, this ensures the user can save the information
+//after clicking save" button"
+class UserPreferencesViewModel : ViewModel() {
+    // Mutable states for different preferences
+    val selectedGenders = mutableStateOf(listOf<String>())
+    val selectedProgram = mutableStateOf("")
+    val selectedAgeRange = mutableStateOf(18..50)
+
+    // Function to save gender preferences
+    fun saveGenderPreferences(genders: List<String>) {
+        selectedGenders.value = genders
+    }
+
+    // Function to save program preference
+    fun saveProgramPreference(program: String) {
+        selectedProgram.value = program
+    }
+
+    // Function to save age range preference
+    fun saveAgeRangePreference(range: IntRange) {
+        selectedAgeRange.value = range
+    }
+}
+
+    // You can add more functions to save other types
 
 
 @Composable
@@ -95,7 +123,7 @@ fun ProfileSettingsScreen(
     var age by remember { mutableStateOf(18f) } // Default initial age
     var showAgeSlider by remember { mutableStateOf(false) }
 
-    // Gender dropdown states
+    //Dropdown states
     var expandedGender by remember { mutableStateOf(false) }
     val genderOptions = listOf("Male", "Female", "Other", "Prefer not to say") // Define your options here
     var selectedGender by remember { mutableStateOf("Please select your gender") }
@@ -104,6 +132,11 @@ fun ProfileSettingsScreen(
     var expandedProgram by remember { mutableStateOf(false) }
     val programOptions = listOf("Arts", "Engineering", "Environment", "Health", "Mathematics", "Science") // Define your options here
     var selectedProgram by remember {mutableStateOf("Please select your program") }
+
+    var expandedEthnicity by remember { mutableStateOf(false) }
+    val ethnicityOptions = listOf("Black/African Descent", "East Asian", "Hispanic/Latino",
+        "Middle Eastern", "Native", "Pacific Islander", "South Asian", "South East Asian", "White/Caucasian", "Other") // Define your options here
+    var selectedEthnicity by remember { mutableStateOf("Please select your ethnicity") }
 
 
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -214,6 +247,44 @@ fun ProfileSettingsScreen(
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
         )
 
+        //Ethnicity
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(Alignment.Top)
+        ){
+            OutlinedTextField(
+                value = selectedEthnicity,
+                onValueChange = { /* ReadOnly TextField */ },
+                label = { Text("Ethnicity") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+                    .clickable { expandedEthnicity = true },
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowDropDown,
+                        contentDescription = "Dropdown",
+                        Modifier.clickable { expandedEthnicity = true }
+                    )
+                },
+                readOnly = true // Make TextField readonly
+            )
+            DropdownMenu(
+                expanded = expandedEthnicity,
+                onDismissRequest = { expandedEthnicity = false }
+            ) {
+                ethnicityOptions.forEach { ethnicity ->
+                    DropdownMenuItem(onClick = {
+                        selectedEthnicity = ethnicity
+                        expandedEthnicity = false
+                    }) {
+                        Text(text = ethnicity)
+                    }
+                }
+            }
+        }
+
+        //Gender
         Box(modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight(Alignment.Top)
@@ -250,6 +321,7 @@ fun ProfileSettingsScreen(
             }
         }
 
+        //Program
         Box(modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight(Alignment.Top)
@@ -301,8 +373,7 @@ fun ProfileSettingsScreen(
         // Save button
         Button(
             onClick = {
-                // Add logic here to save the profile settings
-                // You can use the values of the mutable state variables like firstname, lastname, etc. to update the user's profile in the database
+                      //action to be filled for the save button
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -313,7 +384,6 @@ fun ProfileSettingsScreen(
     }
 }
 //Database interaction
-
 data class UserProfile(
     val id: Long = 0,
     val firstName: String,
@@ -327,7 +397,7 @@ data class UserProfile(
 )
 
 
-//Image code
+//Image selection
 enum class ImageSource {
     Gallery,
     Camera
@@ -375,6 +445,65 @@ fun ImageUploadButton(
 
 
 //Preference page
+
+//Function for multi selection
+@Composable
+fun MultiSelect(
+    options: List<String>,
+    selectedOptions: List<String>,
+    onOptionSelected: (String, Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    label: String
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(modifier = modifier) {
+        OutlinedTextField(
+            value = selectedOptions.joinToString(", "),
+            onValueChange = { },
+            trailingIcon = {
+                Icon(
+                    Icons.Default.ArrowDropDown,
+                    contentDescription = if (expanded) "Close dropdown" else "Open dropdown",
+                    Modifier.clickable { expanded = !expanded }
+                )
+            },
+            label = { Text(label) },
+            readOnly = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .selectable(
+                            selected = selectedOptions.contains(option),
+                            onClick = { onOptionSelected(option, !selectedOptions.contains(option)) }
+                        )
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = selectedOptions.contains(option),
+                        onCheckedChange = { checked ->
+                            onOptionSelected(option, checked)
+                        }
+                    )
+                    Text(
+                        text = option,
+                        style = MaterialTheme.typography.body1.merge(),
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
 @Composable
 fun PreferencesScreen(
     onNavigateToProfile: () -> Unit
@@ -382,15 +511,18 @@ fun PreferencesScreen(
     val scrollState = rememberScrollState()
 
     var age by remember { mutableStateOf(18f) } // Default initial age
+    var age2 by remember { mutableStateOf(30f) }
     var showAgeSlider by remember { mutableStateOf(false) }
 
-    var expandedGender2 by remember { mutableStateOf(false) }
-    val genderoptions2 = listOf("Male", "Female", "Other", "Prefer not to say") // Define your options here
-    var selectGender2 by remember {mutableStateOf("Gender") }
+    val genderOptions2 = listOf("Male", "Female", "Other") // Define your options here
+    var selectGenders2 by remember {mutableStateOf(listOf<String>()) }
 
-    var expandedProgram2 by remember { mutableStateOf(false) }
     val programOptions2 = listOf("Arts", "Engineering", "Environment", "Health", "Mathematics", "Science") // Define your options here
-    var selectedProgram2 by remember {mutableStateOf("Program") }
+    var selectedPrograms2 by remember {mutableStateOf(listOf<String>()) }
+
+    val ethnicityOptions2 = listOf("Black/African Descent", "East Asian", "Hispanic/Latino",
+        "Middle Eastern", "Native", "Pacific Islander", "South Asian", "South East Asian", "White/Caucasian", "Other") // Define your options here
+    var selectedEthnicity2 by remember { mutableStateOf(listOf<String>())}
 
     Column(
         modifier = Modifier
@@ -415,78 +547,50 @@ fun PreferencesScreen(
 
         Spacer(modifier = Modifier.height(50.dp))
         Text("Preference Settings", style = MaterialTheme.typography.h5)
+        Spacer(modifier = Modifier.height(24.dp))
 
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(Alignment.Top)
-        ){
-            OutlinedTextField(
-                value = selectGender2,
-                onValueChange = { /* ReadOnly TextField */ },
-                label = { Text("I'm Interested In: ") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-                    .clickable { expandedGender2 = true },
-                trailingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowDropDown,
-                        contentDescription = "Dropdown",
-                        Modifier.clickable { expandedGender2 = true }
-                    )
-                },
-                readOnly = true // Make TextField readonly
-            )
-            DropdownMenu(
-                expanded = expandedGender2,
-                onDismissRequest = { expandedGender2 = false }
-            ) {
-                genderoptions2.forEach { gender ->
-                    DropdownMenuItem(onClick = {
-                        selectGender2 = gender
-                        expandedGender2 = false
-                    }) {
-                        Text(text = gender)
-                    }
+        MultiSelect(
+            options = genderOptions2,
+            selectedOptions = selectGenders2,
+            onOptionSelected = { option, isSelected ->
+                selectGenders2 = if (isSelected) {
+                    selectGenders2 + option
+                } else {
+                    selectGenders2 - option
                 }
-            }
-        }
+            },
+            label = "I'm Interested In (Gender)"
+        )
 
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(Alignment.Top)
-        ){
-            OutlinedTextField(
-                value = selectedProgram2,
-                onValueChange = { /* ReadOnly TextField */ },
-                label = { Text("I'm Interested In: ") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-                    .clickable { expandedProgram2 = true },
-                trailingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowDropDown,
-                        contentDescription = "Dropdown",
-                        Modifier.clickable { expandedProgram2 = true }
-                    )
-                },
-                readOnly = true // Make TextField readonly
-            )
-            DropdownMenu(
-                expanded = expandedProgram2,
-                onDismissRequest = { expandedProgram2 = false }
-            ) {
-                programOptions2.forEach { program ->
-                    DropdownMenuItem(onClick = {
-                        selectedProgram2 = program
-                        expandedProgram2 = false
-                    }) {
-                        Text(text = program)
-                    }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        MultiSelect(
+            options = ethnicityOptions2,
+            selectedOptions = selectedEthnicity2,
+            onOptionSelected = { option, isSelected ->
+                selectedEthnicity2 = if (isSelected) {
+                    selectedEthnicity2 + option
+                } else {
+                    selectedEthnicity2 - option
                 }
-            }
-        }
+            },
+            label = "I'm Interested In (Ethnicity)"
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        MultiSelect(
+            options = programOptions2,
+            selectedOptions = selectedPrograms2,
+            onOptionSelected = { option, isSelected ->
+                selectedPrograms2 = if (isSelected) {
+                    selectedPrograms2 + option
+                } else {
+                    selectedPrograms2 - option
+                }
+            },
+            label = "I'm Interested In (Program)"
+        )
 
 
         AgeSelector(
@@ -500,7 +604,7 @@ fun PreferencesScreen(
         )
         AgeSelector(
             ageRange = 18f..30f, // This is the range of the slider
-            initialAge = age, // Pass the initial age, it could be a state if you need to remember it
+            initialAge = age2, // Pass the initial age, it could be a state if you need to remember it
             onAgeSelected = {
                 age = it // Update the age when the user has finished selecting a new age
                 showAgeSlider = false // Hide the slider
