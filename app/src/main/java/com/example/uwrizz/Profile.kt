@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.*
 import androidx.compose.ui.layout.*
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.res.vectorResource
@@ -28,32 +28,14 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.foundation.selection.selectable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.mutableStateOf
+
 
 import com.example.uwrizz.R
 
 //UserPreferenceViewModel, needs to be changed, this ensures the user can save the information
 //after clicking save" button"
-class UserPreferencesViewModel : ViewModel() {
-    // Mutable states for different preferences
-    val selectedGenders = mutableStateOf(listOf<String>())
-    val selectedProgram = mutableStateOf("")
-    val selectedAgeRange = mutableStateOf(18..50)
 
-    // Function to save gender preferences
-    fun saveGenderPreferences(genders: List<String>) {
-        selectedGenders.value = genders
-    }
-
-    // Function to save program preference
-    fun saveProgramPreference(program: String) {
-        selectedProgram.value = program
-    }
-
-    // Function to save age range preference
-    fun saveAgeRangePreference(range: IntRange) {
-        selectedAgeRange.value = range
-    }
-}
 
     // You can add more functions to save other types
 
@@ -107,6 +89,7 @@ fun ProfileSettingsScreen(
     onImageClick: () -> Unit, // Placeholder click action for adding an image
     onImageSelected: (Uri) -> Unit,
     onNavigateToPreferences: () -> Unit,
+    onNavigateToSurvey: () -> Unit
 ) {
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var imageUri1 by remember { mutableStateOf<Uri?>(null) }
@@ -187,13 +170,23 @@ fun ProfileSettingsScreen(
             }
 
             Spacer(Modifier.weight(1f)) // This pushes the button to the right
+            Column (horizontalAlignment = Alignment.End) {
+                // Edit Preferences button
+                Button(
+                    onClick = onNavigateToPreferences,
+                    modifier = Modifier
+                ) {
+                    Text("Edit Preferences")
+                }
 
-            // Edit Preferences button
-            Button(
-                onClick = onNavigateToPreferences,
-                modifier = Modifier
-            ) {
-                Text("Edit Preferences")
+                Spacer(modifier = Modifier.height(5.dp))
+
+                Button(
+                    onClick = onNavigateToSurvey,
+                    modifier = Modifier
+                ) {
+                    Text("Edit Survey")
+                }
             }
         }
 
@@ -624,6 +617,514 @@ fun PreferencesScreen(
         ) {
             Text("Save")
         }
+    }
+}
+@Composable
+fun SurveyScreen(
+    onNavigateToProfile: () -> Unit
+) {
+    val scrollState = rememberScrollState()
+
+    var Question1 by remember { mutableStateOf(false) }
+    var Question2 by remember { mutableStateOf(false) }
+    var Question3 by remember { mutableStateOf(false) }
+    var Question4 by remember { mutableStateOf(false) }
+    var Question5 by remember { mutableStateOf(false) }
+    var Question6 by remember { mutableStateOf(false) }
+    var Question7 by remember { mutableStateOf(false) }
+    var Question8 by remember { mutableStateOf(false) }
+    var Question9 by remember { mutableStateOf(false) }
+    var Question10 by remember { mutableStateOf(false) }
+    val Question1Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
+    val Question2Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
+    val Question3Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
+    val Question4Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
+    val Question5Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
+    val Question6Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
+    val Question7Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
+    val Question8Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
+    val Question9Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
+    val Question10Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
+
+    var answer by remember {mutableStateOf("Please select your answer") }
+
+    Column(
+        modifier = Modifier
+            .verticalScroll(scrollState) // This adds the scrolling behavior
+            .fillMaxHeight() // This makes the Column fill the available height
+            .padding(16.dp) // Replace with your desired padding
+    ) {
+        Spacer(Modifier.weight(1f)) // This is used for layout purposes
+        Button(
+            onClick = onNavigateToProfile,
+            modifier = Modifier
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) { // Align icon and text vertically
+                Icon(
+                    ImageVector.vectorResource(id = R.drawable.ic_arrow), // Replace with your icon's resource ID
+                    contentDescription = "Edit Profile" // Accessibility description
+                )
+                Spacer(Modifier.width(4.dp)) // Add some spacing between the icon and the text
+                Text("Profile") // Text following the icon
+            }
+        }
+
+        Spacer(modifier = Modifier.height(50.dp))
+        Text("Survey Questions", style = MaterialTheme.typography.h5)
+        Spacer(modifier = Modifier.height(32.dp))
+
+        //Question1
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(Alignment.Top)
+        ){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(align = Alignment.Top)
+            ) {
+                Text("Question 1", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+
+                OutlinedTextField(
+                    value = answer,
+                    onValueChange = { /* ReadOnly TextField */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable { Question1 = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            Modifier.clickable { Question1 = true }
+                        )
+                    },
+                    readOnly = true // Make TextField readonly
+                )
+                DropdownMenu(
+                    expanded = Question1,
+                    onDismissRequest = { Question1 = false }
+                ) {
+                    Question1Options.forEach { question1 ->
+                        DropdownMenuItem(onClick = {
+                            answer = question1
+                            Question1 = false
+                        }) {
+                            Text(text = question1)
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        //Question2
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(Alignment.Top)
+        ){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(align = Alignment.Top)
+            ) {
+                Text("Question 2", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+
+                OutlinedTextField(
+                    value = answer,
+                    onValueChange = { /* ReadOnly TextField */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable { Question2 = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            Modifier.clickable { Question2 = true }
+                        )
+                    },
+                    readOnly = true // Make TextField readonly
+                )
+                DropdownMenu(
+                    expanded = Question2,
+                    onDismissRequest = { Question2 = false }
+                ) {
+                    Question2Options.forEach { question2 ->
+                        DropdownMenuItem(onClick = {
+                            answer = question2
+                            Question2 = false
+                        }) {
+                            Text(text = question2)
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+
+        //Question3
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(Alignment.Top)
+        ){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(align = Alignment.Top)
+            ) {
+                Text("Question 3", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+
+                OutlinedTextField(
+                    value = answer,
+                    onValueChange = { /* ReadOnly TextField */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable { Question3 = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            Modifier.clickable { Question3 = true }
+                        )
+                    },
+                    readOnly = true // Make TextField readonly
+                )
+                DropdownMenu(
+                    expanded = Question3,
+                    onDismissRequest = { Question3 = false }
+                ) {
+                    Question3Options.forEach { question3 ->
+                        DropdownMenuItem(onClick = {
+                            answer = question3
+                            Question3 = false
+                        }) {
+                            Text(text = question3)
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+
+        //Question4
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(Alignment.Top)
+        ){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(align = Alignment.Top)
+            ) {
+                Text("Question 4", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+
+                OutlinedTextField(
+                    value = answer,
+                    onValueChange = { /* ReadOnly TextField */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable { Question2 = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            Modifier.clickable { Question4 = true }
+                        )
+                    },
+                    readOnly = true // Make TextField readonly
+                )
+                DropdownMenu(
+                    expanded = Question4,
+                    onDismissRequest = { Question4 = false }
+                ) {
+                    Question4Options.forEach { question4 ->
+                        DropdownMenuItem(onClick = {
+                            answer = question4
+                            Question1 = false
+                        }) {
+                            Text(text = question4)
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+
+        //Question5
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(Alignment.Top)
+        ){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(align = Alignment.Top)
+            ) {
+                Text("Question 5", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+
+                OutlinedTextField(
+                    value = answer,
+                    onValueChange = { /* ReadOnly TextField */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable { Question5 = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            Modifier.clickable { Question5 = true }
+                        )
+                    },
+                    readOnly = true // Make TextField readonly
+                )
+                DropdownMenu(
+                    expanded = Question5,
+                    onDismissRequest = { Question5 = false }
+                ) {
+                    Question5Options.forEach { question5 ->
+                        DropdownMenuItem(onClick = {
+                            answer = question5
+                            Question1 = false
+                        }) {
+                            Text(text = question5)
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        //Question6
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(Alignment.Top)
+        ){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(align = Alignment.Top)
+            ) {
+                Text("Question 6", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+
+                OutlinedTextField(
+                    value = answer,
+                    onValueChange = { /* ReadOnly TextField */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable { Question6 = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            Modifier.clickable { Question6 = true }
+                        )
+                    },
+                    readOnly = true // Make TextField readonly
+                )
+                DropdownMenu(
+                    expanded = Question6,
+                    onDismissRequest = { Question6 = false }
+                ) {
+                    Question6Options.forEach { question6 ->
+                        DropdownMenuItem(onClick = {
+                            answer = question6
+                            Question6 = false
+                        }) {
+                            Text(text = question6)
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        //Question7
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(Alignment.Top)
+        ){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(align = Alignment.Top)
+            ) {
+                Text("Question 7", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+
+                OutlinedTextField(
+                    value = answer,
+                    onValueChange = { /* ReadOnly TextField */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable { Question7 = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            Modifier.clickable { Question7 = true }
+                        )
+                    },
+                    readOnly = true // Make TextField readonly
+                )
+                DropdownMenu(
+                    expanded = Question7,
+                    onDismissRequest = { Question7 = false }
+                ) {
+                    Question7Options.forEach { question7->
+                        DropdownMenuItem(onClick = {
+                            answer = question7
+                            Question7 = false
+                        }) {
+                            Text(text = question7)
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+
+        //Question8
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(Alignment.Top)
+        ){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(align = Alignment.Top)
+            ) {
+                Text("Question 8", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+
+                OutlinedTextField(
+                    value = answer,
+                    onValueChange = { /* ReadOnly TextField */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable { Question2 = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            Modifier.clickable { Question8 = true }
+                        )
+                    },
+                    readOnly = true // Make TextField readonly
+                )
+                DropdownMenu(
+                    expanded = Question8,
+                    onDismissRequest = { Question8 = false }
+                ) {
+                    Question8Options.forEach { question8 ->
+                        DropdownMenuItem(onClick = {
+                            answer = question8
+                            Question8 = false
+                        }) {
+                            Text(text = question8)
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+
+        //Question9
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(Alignment.Top)
+        ){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(align = Alignment.Top)
+            ) {
+                Text("Question 9", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+
+                OutlinedTextField(
+                    value = answer,
+                    onValueChange = { /* ReadOnly TextField */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable { Question2 = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            Modifier.clickable { Question9 = true }
+                        )
+                    },
+                    readOnly = true // Make TextField readonly
+                )
+                DropdownMenu(
+                    expanded = Question9,
+                    onDismissRequest = { Question9 = false }
+                ) {
+                    Question9Options.forEach { question9 ->
+                        DropdownMenuItem(onClick = {
+                            answer = question9
+                            Question9 = false
+                        }) {
+                            Text(text = question9)
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+
+        //Question10
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(Alignment.Top)
+        ){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(align = Alignment.Top)
+            ) {
+                Text("Question 10", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+
+                OutlinedTextField(
+                    value = answer,
+                    onValueChange = { /* ReadOnly TextField */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable { Question2 = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            Modifier.clickable { Question2 = true }
+                        )
+                    },
+                    readOnly = true // Make TextField readonly
+                )
+                DropdownMenu(
+                    expanded = Question10,
+                    onDismissRequest = { Question10 = false }
+                ) {
+                    Question10Options.forEach { question10 ->
+                        DropdownMenuItem(onClick = {
+                            answer = question10
+                            Question10 = false
+                        }) {
+                            Text(text = question10)
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(20.dp))
     }
 }
 

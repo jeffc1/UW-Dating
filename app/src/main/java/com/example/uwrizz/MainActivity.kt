@@ -128,6 +128,9 @@ Log.e("checking here :", ""+isLoggedIn)
                         onImageSelected = { uri ->
                             // Here you can handle the selected image URI.
                             // For example, updating the UI state or uploading the image to a server.
+                        },
+                        onNavigateToSurvey = {
+                            currentScreen = Screen.Survey
                         }
                     )
                     Screen.Preferences -> PreferencesScreen(
@@ -136,6 +139,13 @@ Log.e("checking here :", ""+isLoggedIn)
                         // E.g., updating the state to navigate to the preferences screen
                         currentScreen = Screen.Profile
                     }
+                    )
+                    Screen.Survey -> SurveyScreen(
+                        onNavigateToProfile = {
+                            // Define what happens when "Edit Preferences" button is clicked
+                            // E.g., updating the state to navigate to the preferences screen
+                            currentScreen = Screen.Profile
+                        }
                     )
                 }
             }
@@ -245,7 +255,7 @@ fun Icon(chat: Screen, contentDescription: String) {
 }
 
 enum class Screen {
-    Home, Chat, Likes, Profile, Preferences
+    Home, Chat, Likes, Profile, Preferences, Survey
 }
 
 
