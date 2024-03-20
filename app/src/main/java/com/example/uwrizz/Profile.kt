@@ -1125,7 +1125,19 @@ fun SurveyScreen(
                 }
             }
         }
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Save button
+        Button(
+            onClick = {
+                //action to be filled for the save button
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp)
+        ) {
+            Text("Save")
+        }
     }
 }
 
