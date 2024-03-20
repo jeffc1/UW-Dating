@@ -635,18 +635,19 @@ fun SurveyScreen(
     var Question8 by remember { mutableStateOf(false) }
     var Question9 by remember { mutableStateOf(false) }
     var Question10 by remember { mutableStateOf(false) }
-    val Question1Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
-    val Question2Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
-    val Question3Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
-    val Question4Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
-    val Question5Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
-    val Question6Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
-    val Question7Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
-    val Question8Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
-    val Question9Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
-    val Question10Options = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree")
+    val QuestionOptions = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree") // Define your options here
+    var answer1 by remember {mutableStateOf("Please select your answer") }
+    var answer2 by remember {mutableStateOf("Please select your answer") }
+    var answer3 by remember {mutableStateOf("Please select your answer") }
+    var answer4 by remember {mutableStateOf("Please select your answer") }
+    var answer5 by remember {mutableStateOf("Please select your answer") }
+    var answer6 by remember {mutableStateOf("Please select your answer") }
+    var answer7 by remember {mutableStateOf("Please select your answer") }
+    var answer8 by remember {mutableStateOf("Please select your answer") }
+    var answer9 by remember {mutableStateOf("Please select your answer") }
+    var answer10 by remember {mutableStateOf("Please select your answer") }
 
-    var answer by remember {mutableStateOf("Please select your answer") }
+
 
     Column(
         modifier = Modifier
@@ -686,7 +687,7 @@ fun SurveyScreen(
                 Text("Question 1", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
-                    value = answer,
+                    value = answer1,
                     onValueChange = { /* ReadOnly TextField */ },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -705,9 +706,9 @@ fun SurveyScreen(
                     expanded = Question1,
                     onDismissRequest = { Question1 = false }
                 ) {
-                    Question1Options.forEach { question1 ->
+                    QuestionOptions.forEach { question1 ->
                         DropdownMenuItem(onClick = {
-                            answer = question1
+                            answer1 = question1
                             Question1 = false
                         }) {
                             Text(text = question1)
@@ -732,7 +733,7 @@ fun SurveyScreen(
                 Text("Question 2", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
-                    value = answer,
+                    value = answer2,
                     onValueChange = { /* ReadOnly TextField */ },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -751,9 +752,9 @@ fun SurveyScreen(
                     expanded = Question2,
                     onDismissRequest = { Question2 = false }
                 ) {
-                    Question2Options.forEach { question2 ->
+                    QuestionOptions.forEach { question2 ->
                         DropdownMenuItem(onClick = {
-                            answer = question2
+                            answer2 = question2
                             Question2 = false
                         }) {
                             Text(text = question2)
@@ -777,7 +778,7 @@ fun SurveyScreen(
                 Text("Question 3", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
-                    value = answer,
+                    value = answer3,
                     onValueChange = { /* ReadOnly TextField */ },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -796,9 +797,9 @@ fun SurveyScreen(
                     expanded = Question3,
                     onDismissRequest = { Question3 = false }
                 ) {
-                    Question3Options.forEach { question3 ->
+                    QuestionOptions.forEach { question3 ->
                         DropdownMenuItem(onClick = {
-                            answer = question3
+                            answer3 = question3
                             Question3 = false
                         }) {
                             Text(text = question3)
@@ -822,7 +823,7 @@ fun SurveyScreen(
                 Text("Question 4", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
-                    value = answer,
+                    value = answer4,
                     onValueChange = { /* ReadOnly TextField */ },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -841,9 +842,9 @@ fun SurveyScreen(
                     expanded = Question4,
                     onDismissRequest = { Question4 = false }
                 ) {
-                    Question4Options.forEach { question4 ->
+                    QuestionOptions.forEach { question4 ->
                         DropdownMenuItem(onClick = {
-                            answer = question4
+                            answer4 = question4
                             Question1 = false
                         }) {
                             Text(text = question4)
@@ -867,7 +868,7 @@ fun SurveyScreen(
                 Text("Question 5", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
-                    value = answer,
+                    value = answer5,
                     onValueChange = { /* ReadOnly TextField */ },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -886,9 +887,9 @@ fun SurveyScreen(
                     expanded = Question5,
                     onDismissRequest = { Question5 = false }
                 ) {
-                    Question5Options.forEach { question5 ->
+                    QuestionOptions.forEach { question5 ->
                         DropdownMenuItem(onClick = {
-                            answer = question5
+                            answer5 = question5
                             Question1 = false
                         }) {
                             Text(text = question5)
@@ -913,7 +914,7 @@ fun SurveyScreen(
                 Text("Question 6", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
-                    value = answer,
+                    value = answer6,
                     onValueChange = { /* ReadOnly TextField */ },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -932,9 +933,9 @@ fun SurveyScreen(
                     expanded = Question6,
                     onDismissRequest = { Question6 = false }
                 ) {
-                    Question6Options.forEach { question6 ->
+                    QuestionOptions.forEach { question6 ->
                         DropdownMenuItem(onClick = {
-                            answer = question6
+                            answer6 = question6
                             Question6 = false
                         }) {
                             Text(text = question6)
@@ -959,7 +960,7 @@ fun SurveyScreen(
                 Text("Question 7", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
-                    value = answer,
+                    value = answer7,
                     onValueChange = { /* ReadOnly TextField */ },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -978,9 +979,9 @@ fun SurveyScreen(
                     expanded = Question7,
                     onDismissRequest = { Question7 = false }
                 ) {
-                    Question7Options.forEach { question7->
+                    QuestionOptions.forEach { question7->
                         DropdownMenuItem(onClick = {
-                            answer = question7
+                            answer7 = question7
                             Question7 = false
                         }) {
                             Text(text = question7)
@@ -1004,7 +1005,7 @@ fun SurveyScreen(
                 Text("Question 8", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
-                    value = answer,
+                    value = answer8,
                     onValueChange = { /* ReadOnly TextField */ },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1023,9 +1024,9 @@ fun SurveyScreen(
                     expanded = Question8,
                     onDismissRequest = { Question8 = false }
                 ) {
-                    Question8Options.forEach { question8 ->
+                    QuestionOptions.forEach { question8 ->
                         DropdownMenuItem(onClick = {
-                            answer = question8
+                            answer8 = question8
                             Question8 = false
                         }) {
                             Text(text = question8)
@@ -1049,7 +1050,7 @@ fun SurveyScreen(
                 Text("Question 9", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
-                    value = answer,
+                    value = answer9,
                     onValueChange = { /* ReadOnly TextField */ },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1068,9 +1069,9 @@ fun SurveyScreen(
                     expanded = Question9,
                     onDismissRequest = { Question9 = false }
                 ) {
-                    Question9Options.forEach { question9 ->
+                    QuestionOptions.forEach { question9 ->
                         DropdownMenuItem(onClick = {
-                            answer = question9
+                            answer9 = question9
                             Question9 = false
                         }) {
                             Text(text = question9)
@@ -1094,7 +1095,7 @@ fun SurveyScreen(
                 Text("Question 10", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
-                    value = answer,
+                    value = answer10,
                     onValueChange = { /* ReadOnly TextField */ },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1113,9 +1114,9 @@ fun SurveyScreen(
                     expanded = Question10,
                     onDismissRequest = { Question10 = false }
                 ) {
-                    Question10Options.forEach { question10 ->
+                    QuestionOptions.forEach { question10 ->
                         DropdownMenuItem(onClick = {
-                            answer = question10
+                            answer10 = question10
                             Question10 = false
                         }) {
                             Text(text = question10)
