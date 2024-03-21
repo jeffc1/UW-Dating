@@ -635,7 +635,7 @@ fun SurveyScreen(
     var Question8 by remember { mutableStateOf(false) }
     var Question9 by remember { mutableStateOf(false) }
     var Question10 by remember { mutableStateOf(false) }
-    val QuestionOptions = listOf("Strongly Disagree", "Disagree", "Mutual", "Agree", "Strongly Agree") // Define your options here
+    val QuestionOptions = listOf("Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree") // Define your options here
     var answer1 by remember {mutableStateOf("Please select your answer") }
     var answer2 by remember {mutableStateOf("Please select your answer") }
     var answer3 by remember {mutableStateOf("Please select your answer") }
