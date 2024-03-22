@@ -3,7 +3,6 @@
 package com.example.uwrizz
 
 // Import everything that's necessary
-import UserDatabaseHelper
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -24,17 +23,16 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.googlefonts.GoogleFont
-import com.example.uwrizz.ui.theme.UWRizzTheme
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.CoroutineScope
-import androidx.navigation.NavController
 import kotlinx.coroutines.flow.map
 import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.Dispatchers
+import com.example.uwrizz.ui.theme.UWRizzTheme
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.websocket.*
+import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.json.Json
 
 
 // Replace this with your application's package name
@@ -50,47 +48,32 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize the login state to logged out
-        val dataStore = applicationContext.dataStore
-        CoroutineScope(Dispatchers.IO).launch {
-            dataStore.edit { settings ->
-                settings[booleanPreferencesKey("IS_LOGGED_IN")] = false
+        // Initialize the Ktor client
+        val client = HttpClient(CIO) {
+            install(ContentNegotiation) {
+                json(Json {
+                    prettyPrint = true
+                    isLenient = true
+                    coerceInputValues = true // Coerce incorrect JSON values instead of failing
+                    ignoreUnknownKeys = true // Ignore unknown keys in the JSON
+                })
+            }
+            install(WebSockets) {
+                // Configure WebSocket options if needed
             }
         }
 
         setContent {
-            fun isFirstRun(): Boolean {
-                val prefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
-                val isFirstRun = prefs.getBoolean("isFirstRun", true)
-                if (isFirstRun) {
-                    with(prefs.edit()) {
-                        putBoolean("isFirstRun", false)
-                        apply()
-                    }
-                }
-                return isFirstRun
-            }
-
             UWRizzTheme {
-                // State to manage whether the user is logged in or not
-                val scope = rememberCoroutineScope()
-                val dataStore = applicationContext.dataStore
-                if (isFirstRun()) {
-                    val dbHelper = UserDatabaseHelper(this@MainActivity)
-                    dbHelper.addUser("admin", "password") // Replace with your desired credentials
-                }
-
-                // Use the dataStore directly inside the MainScreen composable
-                MainScreen()
+                // Pass the client to the MainScreen composable
+                MainScreen(client)
             }
         }
     }
 }
 
-
-
 @Composable
-fun MainScreen() {
+fun MainScreen(client: HttpClient) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val dataStore = context.dataStore
@@ -112,7 +95,7 @@ Log.e("checking here :", ""+isLoggedIn)
             Box(modifier = Modifier.padding(innerPadding)) {
                 when (currentScreen) {
                     Screen.Home -> MainContent()
-                    Screen.Chat -> ChatScreen()
+                    Screen.Chat -> ChatScreen(client)
                     Screen.Likes -> LikesScreen(exampleProfiles)
                     Screen.Profile -> ProfileSettingsScreen(
                         profileImage = ImageVector.vectorResource(R.drawable.ic_head), // Replace with your actual default image resource
