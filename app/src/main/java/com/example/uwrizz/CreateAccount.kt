@@ -22,7 +22,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.AnnotatedString
 
 @Composable
-fun CreateAccount(context: Context, onLoginSuccess: () -> Unit) {
+fun CreateAccount(
+    context: Context,
+    onLoginSuccess: () -> Unit,
+    onNavigateBack: () -> Unit
+) {
     var firstname by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -36,7 +40,8 @@ fun CreateAccount(context: Context, onLoginSuccess: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        Spacer(modifier = Modifier.height(32.dp))
+
+        Spacer(modifier = Modifier.height(12.dp))
         Image(
             painter = logo,
             contentDescription = "Uwrizz Logo",
@@ -44,6 +49,16 @@ fun CreateAccount(context: Context, onLoginSuccess: () -> Unit) {
                 .size(200.dp)
                 .align(Alignment.CenterHorizontally)
         )
+        Button(
+            onClick = {
+                onNavigateBack()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp)
+        ) {
+            androidx.compose.material.Text("Back to Login")
+        }
         Spacer(modifier = Modifier.height(40.dp))
         // ------------------
         // username password.
@@ -72,5 +87,15 @@ fun CreateAccount(context: Context, onLoginSuccess: () -> Unit) {
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = {
+                //action to be filled for the save button
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp)
+        ) {
+            androidx.compose.material.Text("Register Account")
+        }
     }
 }

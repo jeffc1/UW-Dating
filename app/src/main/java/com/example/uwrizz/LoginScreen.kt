@@ -53,7 +53,11 @@ fun GeeseApprovedDating() {
 }
 
 @Composable
-fun LoginScreen(context: Context, onLoginSuccess: () -> Unit) {
+fun LoginScreen(
+    context: Context,
+    onLoginSuccess: () -> Unit,
+    onNavigateToCreateAccount: () -> Unit
+) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val userDatabaseHelper = remember { UserDatabaseHelper(context) }
@@ -114,17 +118,17 @@ fun LoginScreen(context: Context, onLoginSuccess: () -> Unit) {
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-            Log.d("LoginScreen", "Button clicked with username: $username and password: $password")
-            // Here you would validate the username and password
-            val isValidUser = userDatabaseHelper.validateUser(username, password)
-            if (isValidUser) {
-                Log.d("LoginScreen", "Login successful")
-                onLoginSuccess()
-            } else {
-                Log.d("LoginScreen", "Login failed")
-                // Optionally, show an error message to the user
-            }
-        },
+                Log.d("LoginScreen", "Button clicked with username: $username and password: $password")
+                // Here you would validate the username and password
+                val isValidUser = userDatabaseHelper.validateUser(username, password)
+                if (isValidUser) {
+                    Log.d("LoginScreen", "Login successful")
+                    onLoginSuccess()
+                } else {
+                    Log.d("LoginScreen", "Login failed")
+                    // Optionally, show an error message to the user
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
@@ -139,7 +143,7 @@ fun LoginScreen(context: Context, onLoginSuccess: () -> Unit) {
         ClickableText(
             text = AnnotatedString("Sign Up", spanStyle = SpanStyle(color = Color.Red)),
             onClick = {
-                // Handle click action here
+                onNavigateToCreateAccount()
             }
         )
     }

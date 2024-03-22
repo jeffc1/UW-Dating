@@ -1,5 +1,6 @@
 package com.example.uwrizz
 
+import com.example.uwrizz.ui.theme.UWRizzTheme
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -91,288 +92,318 @@ fun ProfileSettingsScreen(
     onNavigateToPreferences: () -> Unit,
     onNavigateToSurvey: () -> Unit
 ) {
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-    var imageUri1 by remember { mutableStateOf<Uri?>(null) }
-    var imageUri2 by remember { mutableStateOf<Uri?>(null) }
-    var imageUri3 by remember { mutableStateOf<Uri?>(null) }
-    var currentImageSelection by remember { mutableStateOf(0) }
+    UWRizzTheme {
+        var imageUri by remember { mutableStateOf<Uri?>(null) }
+        var imageUri1 by remember { mutableStateOf<Uri?>(null) }
+        var imageUri2 by remember { mutableStateOf<Uri?>(null) }
+        var imageUri3 by remember { mutableStateOf<Uri?>(null) }
+        var currentImageSelection by remember { mutableStateOf(0) }
 
 
-    var firstname by remember { mutableStateOf("") }
-    var lastname by remember { mutableStateOf("") }
-    var bio by remember { mutableStateOf("") }
-    var hobby by remember { mutableStateOf("") }
-    var job by remember { mutableStateOf("") }
-    var age by remember { mutableStateOf(18f) } // Default initial age
-    var showAgeSlider by remember { mutableStateOf(false) }
+        var firstname by remember { mutableStateOf("") }
+        var lastname by remember { mutableStateOf("") }
+        var bio by remember { mutableStateOf("") }
+        var hobby by remember { mutableStateOf("") }
+        var job by remember { mutableStateOf("") }
+        var age by remember { mutableStateOf(18f) } // Default initial age
+        var showAgeSlider by remember { mutableStateOf(false) }
 
-    //Dropdown states
-    var expandedGender by remember { mutableStateOf(false) }
-    val genderOptions = listOf("Male", "Female", "Other", "Prefer not to say") // Define your options here
-    var selectedGender by remember { mutableStateOf("Please select your gender") }
+        //Dropdown states
+        var expandedGender by remember { mutableStateOf(false) }
+        val genderOptions =
+            listOf("Male", "Female", "Other", "Prefer not to say") // Define your options here
+        var selectedGender by remember { mutableStateOf("Please select your gender") }
 
-    // Program dropdown states
-    var expandedProgram by remember { mutableStateOf(false) }
-    val programOptions = listOf("Arts", "Engineering", "Environment", "Health", "Mathematics", "Science") // Define your options here
-    var selectedProgram by remember {mutableStateOf("Please select your program") }
+        // Program dropdown states
+        var expandedProgram by remember { mutableStateOf(false) }
+        val programOptions = listOf(
+            "Arts",
+            "Engineering",
+            "Environment",
+            "Health",
+            "Mathematics",
+            "Science"
+        ) // Define your options here
+        var selectedProgram by remember { mutableStateOf("Please select your program") }
 
-    var expandedEthnicity by remember { mutableStateOf(false) }
-    val ethnicityOptions = listOf("Black/African Descent", "East Asian", "Hispanic/Latino",
-        "Middle Eastern", "Native", "Pacific Islander", "South Asian", "South East Asian", "White/Caucasian", "Other") // Define your options here
-    var selectedEthnicity by remember { mutableStateOf("Please select your ethnicity") }
+        var expandedEthnicity by remember { mutableStateOf(false) }
+        val ethnicityOptions = listOf(
+            "Black/African Descent",
+            "East Asian",
+            "Hispanic/Latino",
+            "Middle Eastern",
+            "Native",
+            "Pacific Islander",
+            "South Asian",
+            "South East Asian",
+            "White/Caucasian",
+            "Other"
+        ) // Define your options here
+        var selectedEthnicity by remember { mutableStateOf("Please select your ethnicity") }
 
 
-    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let {
-            when (currentImageSelection) {
-                1 -> imageUri1 = it
-                2 -> imageUri2 = it
-                3 -> imageUri3 = it
-                else -> imageUri = it
+        val galleryLauncher =
+            rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+                uri?.let {
+                    when (currentImageSelection) {
+                        1 -> imageUri1 = it
+                        2 -> imageUri2 = it
+                        3 -> imageUri3 = it
+                        else -> imageUri = it
+                    }
+                }
             }
-        }
-    }
-    val scrollState = rememberScrollState()
+        val scrollState = rememberScrollState()
 
-    Column(
-        modifier = Modifier
-            .verticalScroll(scrollState) // This adds the scrolling behavior
-            .fillMaxHeight() // This makes the Column fill the available height
-            .padding(16.dp) // Replace with your desired padding
-    ) {
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth() // Fill the width of the parent to allow the Spacer to push the button to the right
-                .padding(bottom = 16.dp), //
-            verticalAlignment = Alignment.Top // Align items to the top
+                .verticalScroll(scrollState) // This adds the scrolling behavior
+                .fillMaxHeight() // This makes the Column fill the available height
+                .padding(16.dp) // Replace with your desired padding
         ) {
-            // Profile picture
-            Box(
-                contentAlignment = Alignment.Center,
+            Row(
                 modifier = Modifier
-                    .size(118.dp)
-                    .clip(CircleShape)
-                    .border(2.dp, Color.Gray, CircleShape)
-                    .clickable { galleryLauncher.launch("image/*") } // Launch the gallery
+                    .fillMaxWidth() // Fill the width of the parent to allow the Spacer to push the button to the right
+                    .padding(bottom = 16.dp), //
+                verticalAlignment = Alignment.Top // Align items to the top
             ) {
-                imageUri?.let {
-                    Image(
-                        painter = rememberImagePainter(it),
+                // Profile picture
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(118.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, Color.Gray, CircleShape)
+                        .clickable { galleryLauncher.launch("image/*") } // Launch the gallery
+                ) {
+                    imageUri?.let {
+                        Image(
+                            painter = rememberImagePainter(it),
+                            contentDescription = "Profile picture",
+                            modifier = Modifier.size(120.dp),
+                            contentScale = ContentScale.Crop
+                        )
+                    } ?: Icon(
+                        imageVector = ImageVector.vectorResource(id = R.drawable.ic_headc), // Placeholder icon resource
                         contentDescription = "Profile picture",
-                        modifier = Modifier.size(120.dp),
-                        contentScale = ContentScale.Crop
+                        modifier = Modifier.size(120.dp)
                     )
-                } ?: Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_headc), // Placeholder icon resource
-                    contentDescription = "Profile picture",
-                    modifier = Modifier.size(120.dp)
+                }
+
+                Spacer(Modifier.weight(1f)) // This pushes the button to the right
+                Column(horizontalAlignment = Alignment.End) {
+                    // Edit Preferences button
+                    Button(
+                        onClick = onNavigateToPreferences,
+                        modifier = Modifier
+                    ) {
+                        Text("Edit Preferences")
+                    }
+
+                    Spacer(modifier = Modifier.height(5.dp))
+
+                    Button(
+                        onClick = onNavigateToSurvey,
+                        modifier = Modifier
+                    ) {
+                        Text("Edit Survey")
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(15.dp))
+            Text("Insert your pictures:")
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                ImageUploadButton(imageUri = imageUri1) {
+                    currentImageSelection = 1; galleryLauncher.launch("image/*")
+                }
+                ImageUploadButton(imageUri = imageUri2) {
+                    currentImageSelection = 2; galleryLauncher.launch("image/*")
+                }
+                ImageUploadButton(imageUri = imageUri3) {
+                    currentImageSelection = 3; galleryLauncher.launch("image/*")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Existing fields
+            Text("Profile Settings", style = MaterialTheme.typography.h5)
+
+            OutlinedTextField(
+                value = firstname,
+                onValueChange = { firstname = it },
+                label = { Text("First Name") },
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+            )
+            OutlinedTextField(
+                value = lastname,
+                onValueChange = { lastname = it },
+                label = { Text("Last Name") },
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+            )
+
+            //age
+            AgeSelector(
+                ageRange = 18f..30f, // This is the range of the slider
+                initialAge = age, // Pass the initial age, it could be a state if you need to remember it
+                onAgeSelected = {
+                    age = it // Update the age when the user has finished selecting a new age
+                    showAgeSlider = false // Hide the slider
+                },
+                label = "Select Age"
+            )
+
+            OutlinedTextField(
+                value = bio,
+                onValueChange = { bio = it },
+                label = { Text("Bio") },
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+            )
+
+            //Ethnicity
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(Alignment.Top)
+            ) {
+                OutlinedTextField(
+                    value = selectedEthnicity,
+                    onValueChange = { /* ReadOnly TextField */ },
+                    label = { Text("Ethnicity") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable { expandedEthnicity = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            Modifier.clickable { expandedEthnicity = true }
+                        )
+                    },
+                    readOnly = true // Make TextField readonly
                 )
-            }
-
-            Spacer(Modifier.weight(1f)) // This pushes the button to the right
-            Column (horizontalAlignment = Alignment.End) {
-                // Edit Preferences button
-                Button(
-                    onClick = onNavigateToPreferences,
-                    modifier = Modifier
+                DropdownMenu(
+                    expanded = expandedEthnicity,
+                    onDismissRequest = { expandedEthnicity = false }
                 ) {
-                    Text("Edit Preferences")
+                    ethnicityOptions.forEach { ethnicity ->
+                        DropdownMenuItem(onClick = {
+                            selectedEthnicity = ethnicity
+                            expandedEthnicity = false
+                        }) {
+                            Text(text = ethnicity)
+                        }
+                    }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(5.dp))
-
-                Button(
-                    onClick = onNavigateToSurvey,
+            //Gender
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(Alignment.Top)
+            ) {
+                OutlinedTextField(
+                    value = selectedGender,
+                    onValueChange = { /* ReadOnly TextField */ },
+                    label = { Text("Gender") },
                     modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable { expandedGender = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            Modifier.clickable { expandedGender = true }
+                        )
+                    },
+                    readOnly = true // Make TextField readonly
+                )
+                DropdownMenu(
+                    expanded = expandedGender,
+                    onDismissRequest = { expandedGender = false }
                 ) {
-                    Text("Edit Survey")
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(15.dp))
-        Text("Insert your pictures:")
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            ImageUploadButton(imageUri = imageUri1) { currentImageSelection = 1; galleryLauncher.launch("image/*") }
-            ImageUploadButton(imageUri = imageUri2) { currentImageSelection = 2; galleryLauncher.launch("image/*") }
-            ImageUploadButton(imageUri = imageUri3) { currentImageSelection = 3; galleryLauncher.launch("image/*") }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Existing fields
-        Text("Profile Settings", style = MaterialTheme.typography.h5)
-
-        OutlinedTextField(
-            value = firstname,
-            onValueChange = { firstname = it },
-            label = { Text("First Name") },
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
-        )
-        OutlinedTextField(
-            value = lastname,
-            onValueChange = { lastname = it },
-            label = { Text("Last Name") },
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
-        )
-
-        //age
-        AgeSelector(
-            ageRange = 18f..30f, // This is the range of the slider
-            initialAge = age, // Pass the initial age, it could be a state if you need to remember it
-            onAgeSelected = {
-                age = it // Update the age when the user has finished selecting a new age
-                showAgeSlider = false // Hide the slider
-            },
-            label = "Select Age"
-        )
-
-        OutlinedTextField(
-            value = bio,
-            onValueChange = { bio = it },
-            label = { Text("Bio") },
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
-        )
-
-        //Ethnicity
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(Alignment.Top)
-        ){
-            OutlinedTextField(
-                value = selectedEthnicity,
-                onValueChange = { /* ReadOnly TextField */ },
-                label = { Text("Ethnicity") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)
-                    .clickable { expandedEthnicity = true },
-                trailingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowDropDown,
-                        contentDescription = "Dropdown",
-                        Modifier.clickable { expandedEthnicity = true }
-                    )
-                },
-                readOnly = true // Make TextField readonly
-            )
-            DropdownMenu(
-                expanded = expandedEthnicity,
-                onDismissRequest = { expandedEthnicity = false }
-            ) {
-                ethnicityOptions.forEach { ethnicity ->
-                    DropdownMenuItem(onClick = {
-                        selectedEthnicity = ethnicity
-                        expandedEthnicity = false
-                    }) {
-                        Text(text = ethnicity)
+                    genderOptions.forEach { gender ->
+                        DropdownMenuItem(onClick = {
+                            selectedGender = gender
+                            expandedGender = false
+                        }) {
+                            Text(text = gender)
+                        }
                     }
                 }
             }
-        }
 
-        //Gender
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(Alignment.Top)
-        ){
-            OutlinedTextField(
-                value = selectedGender,
-                onValueChange = { /* ReadOnly TextField */ },
-                label = { Text("Gender") },
+            //Program
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp)
-                    .clickable { expandedGender = true },
-                trailingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowDropDown,
-                        contentDescription = "Dropdown",
-                        Modifier.clickable { expandedGender = true }
-                    )
-                },
-                readOnly = true // Make TextField readonly
-            )
-            DropdownMenu(
-                expanded = expandedGender,
-                onDismissRequest = { expandedGender = false }
+                    .wrapContentHeight(Alignment.Top)
             ) {
-                genderOptions.forEach { gender ->
-                    DropdownMenuItem(onClick = {
-                        selectedGender = gender
-                        expandedGender = false
-                    }) {
-                        Text(text = gender)
+                OutlinedTextField(
+                    value = selectedProgram,
+                    onValueChange = { /* ReadOnly TextField */ },
+                    label = { Text("Program") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable { expandedProgram = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            Modifier.clickable { expandedProgram = true }
+                        )
+                    },
+                    readOnly = true // Make TextField readonly
+                )
+                DropdownMenu(
+                    expanded = expandedProgram,
+                    onDismissRequest = { expandedProgram = false }
+                ) {
+                    programOptions.forEach { program ->
+                        DropdownMenuItem(onClick = {
+                            selectedProgram = program
+                            expandedProgram = false
+                        }) {
+                            Text(text = program)
+                        }
                     }
                 }
             }
-        }
 
-        //Program
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(Alignment.Top)
-        ){
             OutlinedTextField(
-                value = selectedProgram,
-                onValueChange = { /* ReadOnly TextField */ },
-                label = { Text("Program") },
+                value = hobby,
+                onValueChange = { hobby = it },
+                label = { Text("Hobby") },
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+            )
+            OutlinedTextField(
+                value = job,
+                onValueChange = { job = it },
+                label = { Text("Job") },
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+            )
+            // Save button
+            Button(
+                onClick = {
+                    //action to be filled for the save button
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp)
-                    .clickable { expandedProgram = true },
-                trailingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowDropDown,
-                        contentDescription = "Dropdown",
-                        Modifier.clickable { expandedProgram = true }
-                    )
-                },
-                readOnly = true // Make TextField readonly
-            )
-            DropdownMenu(
-                expanded = expandedProgram,
-                onDismissRequest = { expandedProgram = false }
+                    .padding(top = 24.dp)
             ) {
-                programOptions.forEach { program ->
-                    DropdownMenuItem(onClick = {
-                        selectedProgram = program
-                        expandedProgram = false
-                    }) {
-                        Text(text = program)
-                    }
-                }
+                Text("Save")
             }
-        }
-
-        OutlinedTextField(
-            value = hobby,
-            onValueChange = { hobby = it },
-            label = { Text("Hobby") },
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
-        )
-        OutlinedTextField(
-            value = job,
-            onValueChange = { job = it },
-            label = { Text("Job") },
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
-        )
-        // Save button
-        Button(
-            onClick = {
-                      //action to be filled for the save button
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp)
-        ) {
-            Text("Save")
         }
     }
 }
