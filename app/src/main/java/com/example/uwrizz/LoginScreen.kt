@@ -94,7 +94,12 @@ fun LoginScreen(
             onClick = {
                 auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        onLoginSuccess() // Navigate or update UI upon success
+                        // Check if the user's email is verified
+                        val user = auth.currentUser
+                        if (user != null && user.isEmailVerified) {
+                            // User is logged in and email is verified
+                            onLoginSuccess()
+                        }
                     } else {
                         Toast.makeText(context, "Authentication failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                     }

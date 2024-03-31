@@ -65,7 +65,6 @@ fun CreateAccount(
             value = firstname,
             onValueChange = { firstname = it },
             label = { Text("First Name") },
-            visualTransformation = PasswordVisualTransformation(),
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -88,14 +87,35 @@ fun CreateAccount(
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
+                if (!isValidEmail(email)) {
+                    Toast.makeText(context, "Invalid email address.", Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                if (password.length < 6) {
+                    Toast.makeText(context, "Password must be at least 6 characters long.", Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
                 auth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            Toast.makeText(context, "Account Created Successfully",
-                                Toast.LENGTH_SHORT).show()
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d("CreateAccount", "createUserWithEmail:success")
-                            onLoginSuccess()
+                            val user = auth.currentUser
+                            // Send email verification link
+                            user?.sendEmailVerification()
+                                ?.addOnCompleteListener { verificationTask ->
+                                    if (verificationTask.isSuccessful) {
+                                        // Email verification link sent successfully
+                                        Toast.makeText(context, "Account Created Successfully. Verification email sent.",
+                                            Toast.LENGTH_SHORT).show()
+                                        Log.d("CreateAccount", "createUserWithEmail:success")
+                                        onLoginSuccess()
+                                    } else {
+                                        // Failed to send verification email
+                                        Log.e("CreateAccount", "Failed to send verification email.", verificationTask.exception)
+                                        Toast.makeText(context, "Failed to send verification email.",
+                                            Toast.LENGTH_SHORT).show()
+                                        // Continue with the rest of the registration process or handle the error
+                                    }
+                                }
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w("CreateAccount", "createUserWithEmail:failure", task.exception)
@@ -111,4 +131,8 @@ fun CreateAccount(
             androidx.compose.material.Text("Register Account")
         }
     }
+}
+
+private fun isValidEmail(email: String): Boolean {
+    return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
 }
