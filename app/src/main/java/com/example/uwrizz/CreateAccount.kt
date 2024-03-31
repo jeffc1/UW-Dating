@@ -16,8 +16,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.uwrizz.ui.theme.interFamily
 import UserDatabaseHelper
+import android.content.ContentValues.TAG
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 @Composable
 fun CreateAccount(
@@ -31,6 +34,7 @@ fun CreateAccount(
     val logo = painterResource(R.drawable.uwrizzlogo)
     // Initialize Firebase Auth
     val auth = FirebaseAuth.getInstance()
+    val db = Firebase.firestore
 
     Column(
         modifier = Modifier
@@ -100,6 +104,21 @@ fun CreateAccount(
                         if (task.isSuccessful) {
                             val user = auth.currentUser
                             // Send email verification link
+
+                            val newUser = hashMapOf(
+                                "firstName" to firstname,
+                                "id" to auth.currentUser?.uid
+                            )
+                            db.collection("users")
+                                .add(newUser)
+                                .addOnSuccessListener {
+                                    Log.d("CreateAccount", "DocumentSnapshot successfully written!")
+                                    // Handle success, navigate to next screen or perform other actions
+                                }
+                                .addOnFailureListener { e ->
+                                    Log.w("CreateAccount", "Error writing document", e)
+                                    // Handle failure
+                                }
                             user?.sendEmailVerification()
                                 ?.addOnCompleteListener { verificationTask ->
                                     if (verificationTask.isSuccessful) {

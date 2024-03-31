@@ -92,6 +92,9 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
+                if (email == "" || password == "") {
+                    return@Button
+                }
                 auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         // Check if the user's email is verified
