@@ -3,6 +3,7 @@ package com.example.uwrizz
 import UserDatabaseHelper
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -23,46 +25,18 @@ import androidx.compose.ui.unit.sp
 import com.example.uwrizz.ui.theme.Red
 import com.example.uwrizz.ui.theme.Typography
 import com.example.uwrizz.ui.theme.interFamily
-
-
-@Composable
-fun GeeseApprovedDating() {
-    Row(modifier = Modifier.padding(bottom = 5.dp), horizontalArrangement = Arrangement.spacedBy((-8).dp)) {
-        Text(
-            text = "Geese Approved ",
-            style = TextStyle(
-                fontFamily = interFamily,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = -2.sp,
-            ),
-            color = Color.Black,
-            fontSize = 32.sp,
-            modifier = Modifier.padding(end = 8.dp)
-        )
-        Text(
-            text = "Dating.",
-            style = TextStyle(
-                fontFamily = interFamily,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = -2.sp,
-            ),
-            color = Red,
-            fontSize = 32.sp
-        )
-    }
-}
-
+import com.google.firebase.auth.FirebaseAuth
 @Composable
 fun LoginScreen(
     context: Context,
     onLoginSuccess: () -> Unit,
     onNavigateToCreateAccount: () -> Unit
 ) {
-    var username by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val userDatabaseHelper = remember { UserDatabaseHelper(context) }
     val logo = painterResource(R.drawable.uwrizzlogo)
-
+    // Initialize Firebase Auth
+    val auth = FirebaseAuth.getInstance()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -93,9 +67,9 @@ fun LoginScreen(
         // ------------------
         // username password.
         OutlinedTextField(
-            value = username,
-            onValueChange = { username = it },
-            label = { Text("Username") },
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -118,15 +92,12 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                Log.d("LoginScreen", "Button clicked with username: $username and password: $password")
-                // Here you would validate the username and password
-                val isValidUser = userDatabaseHelper.validateUser(username, password)
-                if (isValidUser) {
-                    Log.d("LoginScreen", "Login successful")
-                    onLoginSuccess()
-                } else {
-                    Log.d("LoginScreen", "Login failed")
-                    // Optionally, show an error message to the user
+                auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        onLoginSuccess() // Navigate or update UI upon success
+                    } else {
+                        Toast.makeText(context, "Authentication failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -145,6 +116,33 @@ fun LoginScreen(
             onClick = {
                 onNavigateToCreateAccount()
             }
+        )
+    }
+}
+
+@Composable
+fun GeeseApprovedDating() {
+    Row(modifier = Modifier.padding(bottom = 5.dp), horizontalArrangement = Arrangement.spacedBy((-8).dp)) {
+        Text(
+            text = "Geese Approved ",
+            style = TextStyle(
+                fontFamily = interFamily,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = -2.sp,
+            ),
+            color = Color.Black,
+            fontSize = 32.sp,
+            modifier = Modifier.padding(end = 8.dp)
+        )
+        Text(
+            text = "Dating.",
+            style = TextStyle(
+                fontFamily = interFamily,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = -2.sp,
+            ),
+            color = Red,
+            fontSize = 32.sp
         )
     }
 }

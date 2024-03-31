@@ -143,7 +143,8 @@ fun MainScreen(client: HttpClient) {
                     onNavigateToCreateAccount = {
                         // Update the current screen to navigate to Create Account screen
                         currentScreen = Screen.CreateAccount
-                    }
+                    },
+
                 )
 
                 Screen.CreateAccount -> CreateAccount(

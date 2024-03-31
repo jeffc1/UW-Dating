@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "503589902535",
+    "project_id": "uwrizz-bfd4c",
+    "storage_bucket": "uwrizz-bfd4c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:503589902535:android:3cd9cde9be155ba157c6e2",
+        "android_client_info": {
+          "package_name": "com.example.uwrizz"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBl7AwlsLrHQdSz_YQiqRBRRR8YGUwjqk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

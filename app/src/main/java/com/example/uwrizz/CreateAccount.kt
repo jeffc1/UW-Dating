@@ -16,10 +16,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.uwrizz.ui.theme.interFamily
 import UserDatabaseHelper
-import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.text.AnnotatedString
+import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun CreateAccount(
@@ -30,8 +28,9 @@ fun CreateAccount(
     var firstname by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val userDatabaseHelper = remember { UserDatabaseHelper(context) }
     val logo = painterResource(R.drawable.uwrizzlogo)
+    // Initialize Firebase Auth
+    val auth = FirebaseAuth.getInstance()
 
     Column(
         modifier = Modifier
@@ -89,7 +88,21 @@ fun CreateAccount(
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                //action to be filled for the save button
+                auth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Toast.makeText(context, "Account Created Successfully",
+                                Toast.LENGTH_SHORT).show()
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d("CreateAccount", "createUserWithEmail:success")
+                            onLoginSuccess()
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w("CreateAccount", "createUserWithEmail:failure", task.exception)
+                            Toast.makeText(context, "Authentication failed.",
+                                Toast.LENGTH_SHORT).show()
+                        }
+                    }
             },
             modifier = Modifier
                 .fillMaxWidth()
