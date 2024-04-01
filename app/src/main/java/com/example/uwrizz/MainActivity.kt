@@ -145,7 +145,7 @@ fun MainScreen(client: HttpClient) {
                         currentScreen = Screen.CreateAccount
                     },
 
-                )
+                    )
 
                 Screen.CreateAccount -> CreateAccount(
                     context = context,
@@ -157,7 +157,6 @@ fun MainScreen(client: HttpClient) {
                         currentScreen = Screen.Login
                     }
                 )
-
                 else -> Unit
             }
         } else {

@@ -19,6 +19,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import android.net.Uri
+import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import coil.compose.rememberImagePainter
 import androidx.compose.foundation.rememberScrollState
@@ -33,6 +34,10 @@ import androidx.compose.runtime.mutableStateOf
 
 
 import com.example.uwrizz.R
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.tasks.await
 
 //UserPreferenceViewModel, needs to be changed, this ensures the user can save the information
 //after clicking save" button"
@@ -93,6 +98,9 @@ fun ProfileSettingsScreen(
     onNavigateToSurvey: () -> Unit
 ) {
     UWRizzTheme {
+        val db = Firebase.firestore
+        val auth = FirebaseAuth.getInstance()
+
         var imageUri by remember { mutableStateOf<Uri?>(null) }
         var imageUri1 by remember { mutableStateOf<Uri?>(null) }
         var imageUri2 by remember { mutableStateOf<Uri?>(null) }
@@ -236,7 +244,9 @@ fun ProfileSettingsScreen(
             // Existing fields
             Text("Profile Settings", style = MaterialTheme.typography.h5)
 
+
             OutlinedTextField(
+
                 value = firstname,
                 onValueChange = { firstname = it },
                 label = { Text("First Name") },
@@ -396,7 +406,40 @@ fun ProfileSettingsScreen(
             // Save button
             Button(
                 onClick = {
-                    //action to be filled for the save button
+                    val userId = auth.currentUser?.uid
+                    if (userId == null) {
+                        // Handle the case where the user is not authenticated or the UID is null
+                        Log.e("Profile", "User not authenticated or UID is null")
+                        return@Button
+                    }
+                    val usersCollection = db.collection("users")
+                    val userRef = usersCollection.whereEqualTo("id", userId)
+                    userRef.get()
+                        .addOnSuccessListener { querySnapshot ->
+                            for (document in querySnapshot.documents) {
+                                usersCollection.document(document.id)
+                                    .update(
+                                        "lastName", lastname,
+                                        "bio", bio,
+                                        "gender", selectedGender,
+                                        "program", selectedProgram,
+                                        "hobby", hobby,
+                                        "job", job,
+                                        "profilePictureUri", imageUri1
+                                    )
+                                    .addOnSuccessListener {
+                                        Log.d("Profile", "DocumentSnapshot successfully updated!")
+                                        // Handle success
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Log.w("Profile", "Error updating document", e)
+                                        // Handle failure
+                                    }
+                            }
+                        }
+                        .addOnFailureListener { exception ->
+                            Log.w("Profile", "Error getting documents: ", exception)
+                        }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -407,6 +450,9 @@ fun ProfileSettingsScreen(
         }
     }
 }
+
+
+
 //Database interaction
 data class UserProfile(
     val id: Long = 0,
@@ -1169,6 +1215,16 @@ fun SurveyScreen(
         ) {
             Text("Save")
         }
+    }
+}
+
+suspend fun fetchUserData(userId: String): User? {
+    return try {
+        val userDocument = Firebase.firestore.collection("users").document(userId).get().await()
+        userDocument.toObject(User::class.java)
+    } catch (e: Exception) {
+        Log.e("Firestore", "Error fetching user data", e)
+        null
     }
 }
 

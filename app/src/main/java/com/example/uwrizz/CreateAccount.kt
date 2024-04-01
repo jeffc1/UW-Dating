@@ -31,6 +31,7 @@ fun CreateAccount(
     var firstname by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var reenterPassword by remember { mutableStateOf("") } // New state for re-enter password
     val logo = painterResource(R.drawable.uwrizzlogo)
     // Initialize Firebase Auth
     val auth = FirebaseAuth.getInstance()
@@ -88,6 +89,14 @@ fun CreateAccount(
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
+        OutlinedTextField(
+            value = reenterPassword,
+            onValueChange = { reenterPassword = it },
+            label = { Text("Re-enter Password") }, // Label for re-enter password field
+            visualTransformation = PasswordVisualTransformation(),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
@@ -97,6 +106,10 @@ fun CreateAccount(
                 }
                 if (password.length < 6) {
                     Toast.makeText(context, "Password must be at least 6 characters long.", Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                if (password != reenterPassword) {
+                    Toast.makeText(context, "Passwords do not match.", Toast.LENGTH_SHORT).show()
                     return@Button
                 }
                 auth.createUserWithEmailAndPassword(email, password)
