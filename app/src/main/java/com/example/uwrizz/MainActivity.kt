@@ -4,6 +4,8 @@ package com.example.uwrizz
 
 // Import everything that's necessary
 import UserDatabaseHelper
+import PreferencesScreen
+import SurveyScreen
 import android.content.Context
 import android.os.Bundle
 import android.util.Log

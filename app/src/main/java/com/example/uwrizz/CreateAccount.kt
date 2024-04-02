@@ -13,10 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.uwrizz.ui.theme.interFamily
-import UserDatabaseHelper
-import android.content.ContentValues.TAG
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
@@ -118,9 +114,16 @@ fun CreateAccount(
                             val user = auth.currentUser
                             // Send email verification link
 
-                            val newUser = hashMapOf(
-                                "firstName" to firstname,
-                                "id" to auth.currentUser?.uid
+                            val newUser = BasicUserInfo(
+                                userId = auth.currentUser?.uid as String,
+                                firstName = firstname,
+                                lastName = "",
+                                age = 18f,
+                                ethnicity = "",
+                                gender = "",
+                                program = "",
+                                job = "",
+                                bio = ""
                             )
                             db.collection("users")
                                 .add(newUser)
