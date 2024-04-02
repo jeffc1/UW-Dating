@@ -180,8 +180,46 @@ fun PreferencesScreen(
         // Save button
         Button(
             onClick = {
-                // Add logic here to save the profile settings
-                // You can use the values of the mutable state variables like firstname, lastname, etc. to update the user's profile in the database
+                val userId = auth.currentUser?.uid
+                if (userId == null) {
+                    // Handle the case where the user is not authenticated or the UID is null
+                    Log.e("Preference", "User not authenticated or UID is null")
+                    return@Button
+                }
+                val prefCollection = db.collection("preferences")
+                val userRef = prefCollection.whereEqualTo("userId", userId)
+                val updatedUser = UserPreference(
+                    userId = auth.currentUser?.uid as String,
+                    interestedInGender = selectGenders2,
+                    interestedInEthnicity = selectedEthnicity2,
+                    interestedInProgram = selectedPrograms2,
+                    agePreferenceMin = age.toInt(),
+                    agePreferenceMax = age2.toInt()
+
+                )
+                userRef.get()
+                    .addOnSuccessListener { querySnapshot ->
+                        // Assuming only one document should match the query
+                        val document = querySnapshot.documents.firstOrNull()
+                        if (document != null) {
+                            val docId = document.id // Get the document ID
+                            prefCollection.document(docId)
+                                .set(updatedUser) // Update the document with updatedUser data
+                                .addOnSuccessListener {
+                                    Log.d("Preference", "DocumentSnapshot successfully updated!")
+                                    // Handle success
+                                }
+                                .addOnFailureListener { e ->
+                                    Log.w("Preference", "Error updating document", e)
+                                    // Handle failure
+                                }
+                        } else {
+                            Log.d("Preference", "No matching document found for the userId")
+                        }
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.w("Preference", "Error getting documents: ", exception)
+                    }
             },
             modifier = Modifier
                 .fillMaxWidth()

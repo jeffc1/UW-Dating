@@ -15,6 +15,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
@@ -114,27 +115,9 @@ fun CreateAccount(
                             val user = auth.currentUser
                             // Send email verification link
 
-                            val newUser = BasicUserInfo(
-                                userId = auth.currentUser?.uid as String,
-                                firstName = firstname,
-                                lastName = "",
-                                age = 18f,
-                                ethnicity = "",
-                                gender = "",
-                                program = "",
-                                job = "",
-                                bio = ""
-                            )
-                            db.collection("users")
-                                .add(newUser)
-                                .addOnSuccessListener {
-                                    Log.d("CreateAccount", "DocumentSnapshot successfully written!")
-                                    // Handle success, navigate to next screen or perform other actions
-                                }
-                                .addOnFailureListener { e ->
-                                    Log.w("CreateAccount", "Error writing document", e)
-                                    // Handle failure
-                                }
+                            addProfile(auth, db, firstname)
+                            addPreference(auth, db)
+                            addSurvey(auth, db)
                             user?.sendEmailVerification()
                                 ?.addOnCompleteListener { verificationTask ->
                                     if (verificationTask.isSuccessful) {
@@ -168,6 +151,67 @@ fun CreateAccount(
     }
 }
 
+fun addProfile(auth: FirebaseAuth, db: FirebaseFirestore, firstname: String) {
+    val newUser = BasicUserInfo(
+        userId = auth.currentUser?.uid as String,
+        firstName = firstname,
+        lastName = "",
+        age = 18f,
+        ethnicity = "",
+        gender = "",
+        program = "",
+        job = "",
+        bio = ""
+    )
+    db.collection("users")
+        .add(newUser)
+        .addOnSuccessListener {
+            Log.d("CreateAccount", "user-DocumentSnapshot successfully written!")
+            // Handle success, navigate to next screen or perform other actions
+        }
+        .addOnFailureListener { e ->
+            Log.w("CreateAccount", "user-Error writing document", e)
+            // Handle failure
+        }
+}
+
+fun addPreference(auth: FirebaseAuth, db: FirebaseFirestore) {
+    val newPref = UserPreference(
+        userId = auth.currentUser?.uid as String,
+        interestedInGender = listOf(),
+        interestedInEthnicity = listOf(),
+        interestedInProgram = listOf(),
+        agePreferenceMin = 0,
+        agePreferenceMax= 0
+    )
+    db.collection("preferences")
+        .add(newPref)
+        .addOnSuccessListener {
+            Log.d("CreateAccount", "pref-DocumentSnapshot successfully written!")
+            // Handle success, navigate to next screen or perform other actions
+        }
+        .addOnFailureListener { e ->
+            Log.w("CreateAccount", "pref-Error writing document", e)
+            // Handle failure
+        }
+}
+
+fun addSurvey(auth: FirebaseAuth, db: FirebaseFirestore) {
+    val newSurvey = SurveyAnswers(
+        userId = auth.currentUser?.uid as String,
+        answers = List(10) { -1 }
+    )
+    db.collection("survey")
+        .add(newSurvey)
+        .addOnSuccessListener {
+            Log.d("CreateAccount", "survey-DocumentSnapshot successfully written!")
+            // Handle success, navigate to next screen or perform other actions
+        }
+        .addOnFailureListener { e ->
+            Log.w("CreateAccount", "survey-Error writing document", e)
+            // Handle failure
+        }
+}
 private fun isValidEmail(email: String): Boolean {
     return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
 }

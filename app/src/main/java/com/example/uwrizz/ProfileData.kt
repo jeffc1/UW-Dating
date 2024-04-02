@@ -28,7 +28,7 @@ data class UserPreference(
 
 data class SurveyAnswers(
     val userId: String = "",
-    val answers: Map<String, String> = emptyMap()
+    val answers: List<Int> = listOf()
 )
 
 class ProfileRepository {

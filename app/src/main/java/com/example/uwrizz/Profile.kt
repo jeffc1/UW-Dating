@@ -412,7 +412,6 @@ fun ProfileSettingsScreen(
             // Save button
             Button(
                 onClick = {
-                    Log.e("Profile", "clic@@@@@@@k")
                     val userId = auth.currentUser?.uid
                     if (userId == null) {
                         // Handle the case where the user is not authenticated or the UID is null
