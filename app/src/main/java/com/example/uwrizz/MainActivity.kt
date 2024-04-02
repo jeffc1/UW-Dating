@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.map
 import androidx.navigation.compose.rememberNavController
 import com.example.uwrizz.ui.theme.UWRizzTheme
+import com.google.firebase.auth.FirebaseAuth
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -46,6 +47,9 @@ private const val USER_PREFERENCES_NAME = "com.example.uwrizz"
 
 // The dataStore by delegate
 private val Context.dataStore by preferencesDataStore(name = USER_PREFERENCES_NAME)
+
+//val loggedInUserId = "mwjnyI8mTRfT287LGP0Ac7PJnbt1"
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -105,6 +109,36 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(client: HttpClient) {
+
+    val user = FirebaseAuth.getInstance().currentUser
+    user?.let {
+        // Name, email address, and profile photo Url
+        val name = user.displayName
+        val email = user.email
+        val photoUrl = user.photoUrl
+
+        // Check if user's email is verified
+        val emailVerified = user.isEmailVerified
+
+        // The user's ID, unique to the Firebase project. Do NOT use this value to
+        // authenticate with your backend server, if you have one. Use
+        // FirebaseUser.getToken() instead.
+        val uid = user.uid
+    }
+    var matchedUserId = ""
+
+    if (user != null) {
+        if (user.uid == "mwjnyI8mTRfT287LGP0Ac7PJnbt1") {
+            matchedUserId = "k9ZcZGFZDyWMPE6ctQHBXqltkoo1"
+        }
+        else {
+            matchedUserId = "mwjnyI8mTRfT287LGP0Ac7PJnbt1"
+
+        }
+        Log.d("here", user.uid)
+    }
+    Log.d("IT WAS", "NULL")
+
     UWRizzTheme {
         val scope = rememberCoroutineScope()
         val context = LocalContext.current
@@ -125,6 +159,7 @@ fun MainScreen(client: HttpClient) {
         LaunchedEffect(isLoggedIn) {
             currentScreen = if (isLoggedIn) Screen.Home else Screen.Login
         }
+
         if (!isLoggedIn) { // fix here after -----------------------------------------------------------------------------------------------
             when (currentScreen) {
                 Screen.Login -> LoginScreen(
@@ -169,8 +204,11 @@ fun MainScreen(client: HttpClient) {
             ) { innerPadding ->
                 Box(modifier = Modifier.padding(innerPadding)) {
                     when (currentScreen) {
+
                         Screen.Home -> MainContent()
-                        Screen.Chat -> ChatScreen(client)
+                        Screen.Chat -> if (user != null) {
+                            ChatScreen(user.uid, matchedUserId)
+                        }
                         Screen.Likes -> LikesScreen(exampleProfiles)
                         Screen.Profile -> ProfileSettingsScreen(
                             profileImage = ImageVector.vectorResource(R.drawable.ic_head), // Replace with your actual default image resource
