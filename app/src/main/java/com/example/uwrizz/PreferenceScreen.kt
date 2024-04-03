@@ -1,4 +1,5 @@
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.RangeSlider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,7 +33,15 @@ import com.example.uwrizz.UserPreference
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
+import androidx.compose.material.Surface
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.RangeSlider
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.OutlinedTextField
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PreferencesScreen(
     onNavigateToProfile: () -> Unit
@@ -156,26 +166,51 @@ fun PreferencesScreen(
             },
             label = "I'm Interested In (Program)"
         )
+        var showSlider by remember { mutableStateOf(false) } // State to control the visibility of the slider
 
-
-        AgeSelector(
-            ageRange = 18f..30f, // This is the range of the slider
-            initialAge = age, // Pass the initial age, it could be a state if you need to remember it
-            onAgeSelected = {
-                age = it // Update the age when the user has finished selecting a new age
-                showAgeSlider = false // Hide the slider
-            },
-            label = "Select Preferred Minimum Age"
-        )
-        AgeSelector(
-            ageRange = 18f..30f, // This is the range of the slider
-            initialAge = age2, // Pass the initial age, it could be a state if you need to remember it
-            onAgeSelected = {
-                age = it // Update the age when the user has finished selecting a new age
-                showAgeSlider = false // Hide the slider
-            },
-            label = "Select Preferred Maximum Age"
-        )
+        Column() {
+            OutlinedTextField(
+                value = "Ages: ${age.toInt()} to ${age2.toInt()}",
+                onValueChange = {},
+                label = { Text("Select Age Range") },
+                readOnly = true, // Makes it non-editable
+                trailingIcon = {
+                    Icon(
+                        Icons.Default.ArrowDropDown,
+                        "Select Age Range",
+                        Modifier.clickable { showSlider = !showSlider })
+                },
+                modifier = Modifier
+                    .clickable { showSlider = !showSlider }
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+            )
+            if (showSlider) {
+                RangeSlider(
+                    value = age..age2,
+                    onValueChange = { newRange ->
+                        if (newRange.start == newRange.endInclusive) {
+                            // If both sliders are at the same position, increment age2 by 1
+                            age = newRange.start
+                            age2 = newRange.endInclusive + 1
+                        } else if (newRange.start < newRange.endInclusive) {
+                            // If the range is valid, update age and age2 accordingly
+                            age = newRange.start
+                            age2 = newRange.endInclusive
+                        } else {
+                            // If the start value is greater than the end value, swap them
+                            age = newRange.endInclusive
+                            age2 = newRange.start
+                        }
+                    },
+                    steps = 30 - 18 - 1,
+                    valueRange = 18f..30f,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp)
+                )
+            }
+        }
 
         // Save button
         Button(

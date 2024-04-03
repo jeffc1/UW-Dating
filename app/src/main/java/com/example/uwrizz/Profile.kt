@@ -65,7 +65,7 @@ fun ProfileSettingsScreen(
         var bio by remember { mutableStateOf("") }
         var hobby by remember { mutableStateOf("") }
         var job by remember { mutableStateOf("") }
-        var age by remember { mutableStateOf(18f) } // Default initial age
+        var age by remember { mutableStateOf(18f) }
         var showAgeSlider by remember { mutableStateOf(false) }
         //Dropdown states
         var expandedGender by remember { mutableStateOf(false) }
@@ -151,7 +151,6 @@ fun ProfileSettingsScreen(
                 Log.d("ProfileSettingsScreen", "User not authenticated or UID is null")
             }
         }
-
         Column(
             modifier = Modifier
                 .verticalScroll(scrollState) // This adds the scrolling behavior
@@ -252,17 +251,44 @@ fun ProfileSettingsScreen(
                     .fillMaxWidth()
                     .padding(top = 16.dp)
             )
-
+            Log.d("Before", age.toString())
             //age
-            AgeSelector(
-                ageRange = 18f..30f, // This is the range of the slider
-                initialAge = age, // Pass the initial age, it could be a state if you need to remember it
-                onAgeSelected = {
-                    age = it // Update the age when the user has finished selecting a new age
-                    showAgeSlider = false // Hide the slider
-                },
-                label = "Select Age"
-            )
+            val label = "Select Age"
+            val ageRange = 18f..30f
+            var showSlider by remember { mutableStateOf(false) } // State to control the visibility of the slider
+
+            Column() {
+                OutlinedTextField(
+                    value = "Age: ${age.toInt()}",
+                    onValueChange = {},
+                    label = { Text(label) },
+                    readOnly = true, // Makes it non-editable
+                    trailingIcon = {
+                        Icon(Icons.Default.ArrowDropDown, "Select Age", Modifier.clickable { showSlider = !showSlider })
+                    },
+                    modifier = Modifier
+                        .clickable { showSlider = !showSlider }
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                )
+                // Show the Slider when the OutlinedTextField is clicked
+                if (showSlider) {
+                    Slider(
+                        value = age,
+                        onValueChange = { age = it },
+                        valueRange = ageRange,
+                        steps = (ageRange.endInclusive.toInt() - ageRange.start.toInt()) - 1,
+                        onValueChangeFinished = {
+                            age = age
+                            showAgeSlider = false
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    )
+                }
+            }
+            Log.d("After", age.toString())
 
             OutlinedTextField(
                 value = bio,
@@ -468,19 +494,6 @@ fun ProfileSettingsScreen(
 
 
 
-//Database interaction
-data class UserProfile(
-    val id: Long = 0,
-    val firstName: String,
-    val lastName: String,
-    val bio: String,
-    val gender: String,
-    val program: String,
-    val hobby: String,
-    val Job: String,
-    val profilePictureUri: String? // Store the URI of the profile picture
-)
-
 
 //Image selection
 enum class ImageSource {
@@ -594,8 +607,6 @@ fun MultiSelect(
     }
 }
 
-
-
 @Composable
 fun AgeSelector(
     modifier: Modifier = Modifier,
@@ -639,3 +650,4 @@ fun AgeSelector(
         }
     }
 }
+

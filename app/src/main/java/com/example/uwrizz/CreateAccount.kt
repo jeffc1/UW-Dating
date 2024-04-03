@@ -181,8 +181,8 @@ fun addPreference(auth: FirebaseAuth, db: FirebaseFirestore) {
         interestedInGender = listOf(),
         interestedInEthnicity = listOf(),
         interestedInProgram = listOf(),
-        agePreferenceMin = 0,
-        agePreferenceMax= 0
+        agePreferenceMin = 18,
+        agePreferenceMax= 30
     )
     db.collection("preferences")
         .add(newPref)
@@ -199,7 +199,7 @@ fun addPreference(auth: FirebaseAuth, db: FirebaseFirestore) {
 fun addSurvey(auth: FirebaseAuth, db: FirebaseFirestore) {
     val newSurvey = SurveyAnswers(
         userId = auth.currentUser?.uid as String,
-        answers = List(10) { -1 }
+        answers = List(10) { 3 }
     )
     db.collection("survey")
         .add(newSurvey)

@@ -71,7 +71,7 @@ fun ChatScreen(client: HttpClient) {
     val listState = rememberLazyListState()
     var sendMessageRequested by remember { mutableStateOf(false) }
     var currentMessage by remember { mutableStateOf("") }
-    var yourIP = "10.31.20.15"
+    var yourIP = "184.147.53.88"
 
     // Connect to WebSocket when Composable enters the Composition
     LaunchedEffect(Unit) {
@@ -94,7 +94,7 @@ fun ChatScreen(client: HttpClient) {
 
         client.webSocket(
             method = HttpMethod.Get,
-            host = "10.31.20.15",
+            host = "184.147.53.88",
             port = 8082,
             path = "/chat-socket"
         ) {

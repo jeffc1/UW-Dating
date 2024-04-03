@@ -60,6 +60,18 @@ fun SurveyScreen(
     var answer8 by remember { mutableStateOf("Please select your answer") }
     var answer9 by remember { mutableStateOf("Please select your answer") }
     var answer10 by remember { mutableStateOf("Please select your answer") }
+    val labelQ1: String = "I enjoy spending time outdoors and engaging in adventurous activities."
+    val labelQ2: String = "I enjoy maintaining a healthy lifestyle, including regular exercise and a balanced diet."
+    val labelQ3: String = "I enjoy quiet, cozy nights in rather than going out to crowded social events."
+    val labelQ4: String = "I enjoy deep conversations and meaningful connections over superficial interactions."
+    val labelQ5: String = "I enjoy traveling and exploring new cultures as an essential part of my life."
+    val labelQ6: String = "I enjoy trying new cuisines and experimenting with different flavors."
+    val labelQ7: String = "I enjoy prioritizing spending quality time with family and close friends."
+    val labelQ8: String = "I enjoy open communication and honesty in a relationship."
+    val labelQ9: String = "I enjoy valuing ambition and striving to achieve my goals."
+    val labelQ10: String = "I enjoy spontaneity and embracing new experiences without hesitation."
+
+
 
 
 
@@ -98,7 +110,7 @@ fun SurveyScreen(
                     .fillMaxWidth()
                     .wrapContentHeight(align = Alignment.Top)
             ) {
-                Text("Question 1", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+                Text(labelQ1, style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
                     value = answer1,
@@ -144,7 +156,7 @@ fun SurveyScreen(
                     .fillMaxWidth()
                     .wrapContentHeight(align = Alignment.Top)
             ) {
-                Text("Question 2", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+                Text(labelQ2, style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
                     value = answer2,
@@ -189,7 +201,7 @@ fun SurveyScreen(
                     .fillMaxWidth()
                     .wrapContentHeight(align = Alignment.Top)
             ) {
-                Text("Question 3", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+                Text(labelQ3, style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
                     value = answer3,
@@ -234,7 +246,7 @@ fun SurveyScreen(
                     .fillMaxWidth()
                     .wrapContentHeight(align = Alignment.Top)
             ) {
-                Text("Question 4", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+                Text(labelQ4, style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
                     value = answer4,
@@ -279,7 +291,7 @@ fun SurveyScreen(
                     .fillMaxWidth()
                     .wrapContentHeight(align = Alignment.Top)
             ) {
-                Text("Question 5", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+                Text(labelQ5, style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
                     value = answer5,
@@ -325,7 +337,7 @@ fun SurveyScreen(
                     .fillMaxWidth()
                     .wrapContentHeight(align = Alignment.Top)
             ) {
-                Text("Question 6", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+                Text(labelQ6, style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
                     value = answer6,
@@ -371,7 +383,7 @@ fun SurveyScreen(
                     .fillMaxWidth()
                     .wrapContentHeight(align = Alignment.Top)
             ) {
-                Text("Question 7", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+                Text(labelQ7, style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
                     value = answer7,
@@ -416,7 +428,7 @@ fun SurveyScreen(
                     .fillMaxWidth()
                     .wrapContentHeight(align = Alignment.Top)
             ) {
-                Text("Question 8", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+                Text(labelQ8, style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
                     value = answer8,
@@ -461,7 +473,7 @@ fun SurveyScreen(
                     .fillMaxWidth()
                     .wrapContentHeight(align = Alignment.Top)
             ) {
-                Text("Question 9", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+                Text(labelQ9, style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
                     value = answer9,
@@ -506,7 +518,7 @@ fun SurveyScreen(
                     .fillMaxWidth()
                     .wrapContentHeight(align = Alignment.Top)
             ) {
-                Text("Question 10", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
+                Text(labelQ10, style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
 
                 OutlinedTextField(
                     value = answer10,
@@ -539,7 +551,7 @@ fun SurveyScreen(
                 }
             }
         }
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(70.dp))
 
         // Save button
         Button(
@@ -554,3 +566,4 @@ fun SurveyScreen(
         }
     }
 }
+
