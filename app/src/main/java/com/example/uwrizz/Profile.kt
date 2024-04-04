@@ -29,17 +29,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.runtime.mutableStateOf
-
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.material.icons.filled.AccountCircle
+import android.content.Context
+import android.content.SharedPreferences
 
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 
-//UserPreferenceViewModel, needs to be changed, this ensures the user can save the information
-//after clicking save" button"
 
-
-// You can add more functions to save other types
 
 @Composable
 fun ProfileSettingsScreen(
@@ -47,34 +46,35 @@ fun ProfileSettingsScreen(
     onImageClick: () -> Unit, // Placeholder click action for adding an image
     onImageSelected: (Uri) -> Unit,
     onNavigateToPreferences: () -> Unit,
-    onNavigateToSurvey: () -> Unit
+    onNavigateToSurvey: () -> Unit,
+    context: Context
 ) {
     UWRizzTheme {
         val db = Firebase.firestore
         val auth = FirebaseAuth.getInstance()
 
-        var imageUri by remember { mutableStateOf<Uri?>(null) }
-        var imageUri1 by remember { mutableStateOf<Uri?>(null) }
-        var imageUri2 by remember { mutableStateOf<Uri?>(null) }
-        var imageUri3 by remember { mutableStateOf<Uri?>(null) }
-        var currentImageSelection by remember { mutableStateOf(0) }
+        var imageUri by rememberSaveable{ mutableStateOf<Uri?>(null) }
+        var imageUri1 by rememberSaveable { mutableStateOf<Uri?>(null) }
+        var imageUri2 by rememberSaveable { mutableStateOf<Uri?>(null) }
+        var imageUri3 by rememberSaveable { mutableStateOf<Uri?>(null) }
+        var currentImageSelection by rememberSaveable { mutableStateOf(0) }
 
 
-        var firstname by remember { mutableStateOf("") }
-        var lastname by remember { mutableStateOf("") }
-        var bio by remember { mutableStateOf("") }
-        var hobby by remember { mutableStateOf("") }
-        var job by remember { mutableStateOf("") }
-        var age by remember { mutableStateOf(18f) }
-        var showAgeSlider by remember { mutableStateOf(false) }
+        var firstname by rememberSaveable { mutableStateOf("") }
+        var lastname by rememberSaveable { mutableStateOf("") }
+        var bio by rememberSaveable { mutableStateOf("") }
+        var hobby by rememberSaveable { mutableStateOf("") }
+        var job by rememberSaveable { mutableStateOf("") }
+        var age by rememberSaveable { mutableStateOf(18f) }
+        var showAgeSlider by rememberSaveable { mutableStateOf(false) }
         //Dropdown states
-        var expandedGender by remember { mutableStateOf(false) }
+        var expandedGender by rememberSaveable { mutableStateOf(false) }
         val genderOptions =
             listOf("Male", "Female", "Other", "Prefer not to say") // Define your options here
-        var selectedGender by remember { mutableStateOf("Please select your gender") }
+        var selectedGender by rememberSaveable { mutableStateOf("Please select your gender") }
 
         // Program dropdown states
-        var expandedProgram by remember { mutableStateOf(false) }
+        var expandedProgram by rememberSaveable { mutableStateOf(false) }
         val programOptions = listOf(
             "Arts",
             "Engineering",
@@ -83,9 +83,9 @@ fun ProfileSettingsScreen(
             "Mathematics",
             "Science"
         ) // Define your options here
-        var selectedProgram by remember { mutableStateOf("Please select your program") }
+        var selectedProgram by rememberSaveable { mutableStateOf("Please select your program") }
 
-        var expandedEthnicity by remember { mutableStateOf(false) }
+        var expandedEthnicity by rememberSaveable { mutableStateOf(false) }
         val ethnicityOptions = listOf(
             "Black/African Descent",
             "East Asian",
@@ -98,20 +98,41 @@ fun ProfileSettingsScreen(
             "White/Caucasian",
             "Other"
         ) // Define your options here
-        var selectedEthnicity by remember { mutableStateOf("Please select your ethnicity") }
+        var selectedEthnicity by rememberSaveable { mutableStateOf("Please select your ethnicity") }
 
+        val sharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
 
-        val galleryLauncher =
-            rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-                uri?.let {
-                    when (currentImageSelection) {
-                        1 -> imageUri1 = it
-                        2 -> imageUri2 = it
-                        3 -> imageUri3 = it
-                        else -> imageUri = it
+        fun saveImageUri(uri: Uri, key: String) {
+            editor.putString(key, uri.toString()).apply()
+        }
+        fun loadImageUri(key: String): Uri? {
+            val uriString = sharedPreferences.getString(key, null)
+            return uriString?.let { Uri.parse(it) }
+        }
+
+        val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let {
+                when (currentImageSelection) {
+                    1 -> {
+                        imageUri1 = it; saveImageUri(it, "image_uri_1")
+                    }
+
+                    2 -> {
+                        imageUri2 = it; saveImageUri(it, "image_uri_2")
+                    }
+
+                    3 -> {
+                        imageUri3 = it; saveImageUri(it, "image_uri_3")
+                    }
+
+                    else -> {
+                        imageUri = it; saveImageUri(it, "profile_image_uri")
                     }
                 }
             }
+        }
+
         val scrollState = rememberScrollState()
 
         remember {
@@ -136,6 +157,12 @@ fun ProfileSettingsScreen(
                                 hobby = user.hobby
                                 job = user.job
                                 age = user.age
+
+                                // Load image URIs
+                                imageUri = loadImageUri("profile_image_uri")
+                                imageUri1 = loadImageUri("image_uri_1")
+                                imageUri2 = loadImageUri("image_uri_2")
+                                imageUri3 = loadImageUri("image_uri_3")
                             }
                         } else {
                             Log.d(
@@ -170,21 +197,30 @@ fun ProfileSettingsScreen(
                         .size(118.dp)
                         .clip(CircleShape)
                         .border(2.dp, Color.Gray, CircleShape)
-                        .clickable { galleryLauncher.launch("image/*") } // Launch the gallery
+                        .clickable {
+                            currentImageSelection = 0 // Assign a value indicating profile picture selection
+                            galleryLauncher.launch("image/*") // Launch the gallery
+                        }
                 ) {
-                    imageUri?.let {
+                    imageUri?.let { uri ->
                         Image(
-                            painter = rememberImagePainter(it),
+                            painter = rememberImagePainter(data = uri),
                             contentDescription = "Profile picture",
-                            modifier = Modifier.size(120.dp),
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(CircleShape),
                             contentScale = ContentScale.Crop
                         )
                     } ?: Icon(
-                        imageVector = ImageVector.vectorResource(id = R.drawable.ic_headc), // Placeholder icon resource
-                        contentDescription = "Profile picture",
-                        modifier = Modifier.size(120.dp)
+                        // If imageUri is null, display a default icon to indicate profile picture upload
+                        imageVector = Icons.Default.AccountCircle, // Use the correct default icon here
+                        contentDescription = "Profile picture placeholder",
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
                     )
                 }
+
 
                 Spacer(Modifier.weight(1f)) // This pushes the button to the right
                 Column(horizontalAlignment = Alignment.End) {
@@ -447,7 +483,7 @@ fun ProfileSettingsScreen(
                     val usersCollection = db.collection("users")
                     val userRef = usersCollection.whereEqualTo("userId", userId)
                     val updatedUser = BasicUserInfo(
-                        userId = auth.currentUser?.uid as String,
+                        userId = userId,
                         firstName = firstname,
                         lastName = lastname,
                         age = age,
@@ -457,6 +493,10 @@ fun ProfileSettingsScreen(
                         hobby = hobby,
                         job = job,
                         bio = bio,
+                        profilePictureUri = imageUri?.toString() ?: "",
+                        pictureUri1 = imageUri1?.toString() ?: "",
+                        pictureUri2 = imageUri2?.toString() ?: "",
+                        pictureUri3 = imageUri3?.toString() ?: ""
                     )
                     userRef.get()
                         .addOnSuccessListener { querySnapshot ->
@@ -491,7 +531,6 @@ fun ProfileSettingsScreen(
         }
     }
 }
-
 
 
 
@@ -607,47 +646,4 @@ fun MultiSelect(
     }
 }
 
-@Composable
-fun AgeSelector(
-    modifier: Modifier = Modifier,
-    ageRange: ClosedFloatingPointRange<Float> = 18f..30f,
-    initialAge: Float,
-    onAgeSelected: (Float) -> Unit,
-    label: String
-) {
-    var age by remember { mutableStateOf(initialAge) }
-    var showSlider by remember { mutableStateOf(false) } // State to control the visibility of the slider
-
-    Column(modifier = modifier) {
-        OutlinedTextField(
-            value = "Age: ${age.toInt()}",
-            onValueChange = {},
-            label = { Text(label) },
-            readOnly = true, // Makes it non-editable
-            trailingIcon = {
-                Icon(Icons.Default.ArrowDropDown, "Select Age", Modifier.clickable { showSlider = !showSlider })
-            },
-            modifier = Modifier
-                .clickable { showSlider = !showSlider }
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-        )
-
-        // Show the Slider when the OutlinedTextField is clicked
-        if (showSlider) {
-            Slider(
-                value = age,
-                onValueChange = { age = it },
-                valueRange = ageRange,
-                steps = (ageRange.endInclusive.toInt() - ageRange.start.toInt()) - 1,
-                onValueChangeFinished = {
-                    onAgeSelected(age)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            )
-        }
-    }
-}
 

@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,27 +40,27 @@ fun SurveyScreen(
 ) {
     val scrollState = rememberScrollState()
 
-    var Question1 by remember { mutableStateOf(false) }
-    var Question2 by remember { mutableStateOf(false) }
-    var Question3 by remember { mutableStateOf(false) }
-    var Question4 by remember { mutableStateOf(false) }
-    var Question5 by remember { mutableStateOf(false) }
-    var Question6 by remember { mutableStateOf(false) }
-    var Question7 by remember { mutableStateOf(false) }
-    var Question8 by remember { mutableStateOf(false) }
-    var Question9 by remember { mutableStateOf(false) }
-    var Question10 by remember { mutableStateOf(false) }
+    var Question1 by rememberSaveable { mutableStateOf(false) }
+    var Question2 by rememberSaveable { mutableStateOf(false) }
+    var Question3 by rememberSaveable { mutableStateOf(false) }
+    var Question4 by rememberSaveable { mutableStateOf(false) }
+    var Question5 by rememberSaveable { mutableStateOf(false) }
+    var Question6 by rememberSaveable { mutableStateOf(false) }
+    var Question7 by rememberSaveable { mutableStateOf(false) }
+    var Question8 by rememberSaveable { mutableStateOf(false) }
+    var Question9 by rememberSaveable { mutableStateOf(false) }
+    var Question10 by rememberSaveable { mutableStateOf(false) }
     val QuestionOptions = listOf("Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree") // Define your options here
-    var answer1 by remember { mutableStateOf("Please select your answer") }
-    var answer2 by remember { mutableStateOf("Please select your answer") }
-    var answer3 by remember { mutableStateOf("Please select your answer") }
-    var answer4 by remember { mutableStateOf("Please select your answer") }
-    var answer5 by remember { mutableStateOf("Please select your answer") }
-    var answer6 by remember { mutableStateOf("Please select your answer") }
-    var answer7 by remember { mutableStateOf("Please select your answer") }
-    var answer8 by remember { mutableStateOf("Please select your answer") }
-    var answer9 by remember { mutableStateOf("Please select your answer") }
-    var answer10 by remember { mutableStateOf("Please select your answer") }
+    var answer1 by rememberSaveable { mutableStateOf("Please select your answer") }
+    var answer2 by rememberSaveable { mutableStateOf("Please select your answer") }
+    var answer3 by rememberSaveable { mutableStateOf("Please select your answer") }
+    var answer4 by rememberSaveable { mutableStateOf("Please select your answer") }
+    var answer5 by rememberSaveable { mutableStateOf("Please select your answer") }
+    var answer6 by rememberSaveable { mutableStateOf("Please select your answer") }
+    var answer7 by rememberSaveable { mutableStateOf("Please select your answer") }
+    var answer8 by rememberSaveable { mutableStateOf("Please select your answer") }
+    var answer9 by rememberSaveable { mutableStateOf("Please select your answer") }
+    var answer10 by rememberSaveable { mutableStateOf("Please select your answer") }
     val labelQ1: String = "I enjoy spending time outdoors and engaging in adventurous activities."
     val labelQ2: String = "I enjoy maintaining a healthy lifestyle, including regular exercise and a balanced diet."
     val labelQ3: String = "I enjoy quiet, cozy nights in rather than going out to crowded social events."

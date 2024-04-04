@@ -10,11 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.RangeSlider
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import com.example.uwrizz.AgeSelector
 import com.example.uwrizz.BasicUserInfo
 import com.example.uwrizz.MultiSelect
 import com.example.uwrizz.R
@@ -33,13 +27,12 @@ import com.example.uwrizz.UserPreference
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
-import androidx.compose.material.Surface
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.RangeSlider
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.runtime.saveable.rememberSaveable
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -51,19 +44,19 @@ fun PreferencesScreen(
 
     val scrollState = rememberScrollState()
 
-    var age by remember { mutableStateOf(18f) } // Default initial age
-    var age2 by remember { mutableStateOf(30f) }
-    var showAgeSlider by remember { mutableStateOf(false) }
+    var age by rememberSaveable { mutableStateOf(18f) } // Default initial age
+    var age2 by rememberSaveable { mutableStateOf(30f) }
+    var showAgeSlider by rememberSaveable { mutableStateOf(false) }
 
     val genderOptions2 = listOf("Male", "Female", "Other") // Define your options here
-    var selectGenders2 by remember { mutableStateOf(listOf<String>()) }
+    var selectGenders2 by rememberSaveable { mutableStateOf(listOf<String>()) }
 
     val programOptions2 = listOf("Arts", "Engineering", "Environment", "Health", "Mathematics", "Science") // Define your options here
-    var selectedPrograms2 by remember { mutableStateOf(listOf<String>()) }
+    var selectedPrograms2 by rememberSaveable { mutableStateOf(listOf<String>()) }
 
     val ethnicityOptions2 = listOf("Black/African Descent", "East Asian", "Hispanic/Latino",
         "Middle Eastern", "Native", "Pacific Islander", "South Asian", "South East Asian", "White/Caucasian", "Other") // Define your options here
-    var selectedEthnicity2 by remember { mutableStateOf(listOf<String>()) }
+    var selectedEthnicity2 by rememberSaveable { mutableStateOf(listOf<String>()) }
 
     remember {
         val userId = auth.currentUser?.uid
@@ -261,6 +254,50 @@ fun PreferencesScreen(
                 .padding(top = 24.dp)
         ) {
             Text("Save")
+        }
+    }
+}
+
+@Composable
+fun AgeSelector(
+    modifier: Modifier = Modifier,
+    ageRange: ClosedFloatingPointRange<Float> = 18f..30f,
+    initialAge: Float,
+    onAgeSelected: (Float) -> Unit,
+    label: String
+) {
+    var age by remember { mutableStateOf(initialAge) }
+    var showSlider by remember { mutableStateOf(false) } // State to control the visibility of the slider
+
+    Column(modifier = modifier) {
+        androidx.compose.material.OutlinedTextField(
+            value = "Age: ${age.toInt()}",
+            onValueChange = {},
+            label = { Text(label) },
+            readOnly = true, // Makes it non-editable
+            trailingIcon = {
+                Icon(Icons.Default.ArrowDropDown, "Select Age", Modifier.clickable { showSlider = !showSlider })
+            },
+            modifier = Modifier
+                .clickable { showSlider = !showSlider }
+                .fillMaxWidth()
+                .padding(top = 16.dp)
+        )
+
+        // Show the Slider when the OutlinedTextField is clicked
+        if (showSlider) {
+            Slider(
+                value = age,
+                onValueChange = { age = it },
+                valueRange = ageRange,
+                steps = (ageRange.endInclusive.toInt() - ageRange.start.toInt()) - 1,
+                onValueChangeFinished = {
+                    onAgeSelected(age)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            )
         }
     }
 }

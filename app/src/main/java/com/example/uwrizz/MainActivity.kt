@@ -127,7 +127,7 @@ fun MainScreen(client: HttpClient) {
         LaunchedEffect(isLoggedIn) {
             currentScreen = if (isLoggedIn) Screen.Home else Screen.Login
         }
-        if (!isLoggedIn) { // fix here after -----------------------------------------------------------------------------------------------
+        if (false) { // fix here after -----------------------------------------------------------------------------------------------
             when (currentScreen) {
                 Screen.Login -> LoginScreen(
                     context = context,
@@ -191,7 +191,8 @@ fun MainScreen(client: HttpClient) {
                             },
                             onNavigateToSurvey = {
                                 currentScreen = Screen.Survey
-                            }
+                            },
+                            context = context
                         )
 
                         Screen.Preferences -> PreferencesScreen(

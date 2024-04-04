@@ -14,8 +14,13 @@ data class BasicUserInfo(
     val program: String = "",
     val job: String = "",
     val bio: String = "",
-    val hobby: String = ""
+    val hobby: String = "",
+    val profilePictureUri: String = "", // For the main profile picture
+    val pictureUri1: String = "", // For the first additional picture
+    val pictureUri2: String = "", // For the second additional picture
+    val pictureUri3: String = "" // For the third additional picture
 )
+
 
 data class UserPreference(
     val userId: String = "",
