@@ -18,6 +18,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.FirebaseAuthException
 
 @Composable
 fun CreateAccount(
@@ -134,11 +135,13 @@ fun CreateAccount(
                                         // Continue with the rest of the registration process or handle the error
                                     }
                                 }
-                        } else {
-                            // If sign in fails, display a message to the user.
+                        }  else {
+                            if ((task.exception as? FirebaseAuthException)?.errorCode == "ERROR_EMAIL_ALREADY_IN_USE") {
+                                Toast.makeText(context, "Email is already registered. Please use a different email.", Toast.LENGTH_LONG).show()
+                            } else {
+                                Toast.makeText(context, "Authentication failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                            }
                             Log.w("CreateAccount", "createUserWithEmail:failure", task.exception)
-                            Toast.makeText(context, "Authentication failed.",
-                                Toast.LENGTH_SHORT).show()
                         }
                     }
             },
