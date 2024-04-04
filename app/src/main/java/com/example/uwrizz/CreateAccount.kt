@@ -163,8 +163,12 @@ fun addProfile(auth: FirebaseAuth, db: FirebaseFirestore, firstname: String) {
         ethnicity = "",
         gender = "",
         program = "",
-        job = "",
-        bio = ""
+        oneWord = "",
+        oneEmoji = "",
+        programEmoji = "",
+        hobbyEmoji = "",
+        prompt = "",
+        promptAnswer = ""
     )
     db.collection("users")
         .add(newUser)

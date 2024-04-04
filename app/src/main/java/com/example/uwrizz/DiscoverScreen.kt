@@ -1,5 +1,6 @@
 package com.example.uwrizz
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -21,11 +22,67 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainContent() {
+    val db = Firebase.firestore
+    val auth = FirebaseAuth.getInstance()
+    var firstname by rememberSaveable { mutableStateOf("") }
+    var lastname by rememberSaveable { mutableStateOf("") }
+    var hobby by rememberSaveable { mutableStateOf("") }
+    var hobbyEmoji by rememberSaveable { mutableStateOf("") }
+    var program by rememberSaveable { mutableStateOf("") }
+    var programEmoji by rememberSaveable { mutableStateOf("") }
+    var age by rememberSaveable { mutableStateOf(18f) }
+    var oneWord by rememberSaveable { mutableStateOf("") }
+    var oneEmoji by rememberSaveable { mutableStateOf("") }
+    var prompt by rememberSaveable { mutableStateOf("") }
+    var promptAnswer by rememberSaveable { mutableStateOf("") }
 
+    remember {
+        val userId = auth.currentUser?.uid
+        if (userId != null) {
+            val usersCollection = db.collection("users")
+            val userRef = usersCollection.whereEqualTo("userId", userId)
+
+            userRef.get()
+                .addOnSuccessListener { querySnapshot ->
+                    if (!querySnapshot.isEmpty) {
+                        val user =
+                            querySnapshot.documents[0].toObject(BasicUserInfo::class.java)
+                        if (user != null) {
+                            // Update mutable state variables with user data
+                            firstname = user.firstName
+                            lastname = user.lastName
+                            age = user.age
+                            hobby = user.hobby
+                            hobbyEmoji = user.hobbyEmoji
+                            program = user.program
+                            programEmoji = user.programEmoji
+                            oneWord = user.oneWord
+                            oneEmoji = user.oneEmoji
+                            prompt = user.prompt
+                            promptAnswer = user.promptAnswer
+                        }
+                    } else {
+                        Log.d(
+                            "ProfileSettingsScreen",
+                            "No matching document found for the userId"
+                        )
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.d("ProfileSettingsScreen", "get failed with ", exception)
+                }
+        } else {
+            Log.d("ProfileSettingsScreen", "User not authenticated or UID is null")
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -45,7 +102,7 @@ fun MainContent() {
                 .weight(12f)
                 .padding(16.dp)
         ) {
-            ScrollableCard()
+            ScrollableCard(program, programEmoji, hobby, hobbyEmoji, oneWord, oneEmoji, prompt, promptAnswer)
         }
         XButton()
     }
@@ -65,7 +122,10 @@ fun XButton() {
 }
 
 @Composable
-fun ScrollableCard() {
+fun ScrollableCard(
+    program: String, programEmoji: String, hobby: String, hobbyEmoji: String, oneWord: String, oneEmoji: String,
+    prompt: String, promptAnswer: String
+) {
     LazyColumn(
         modifier = Modifier
             .padding(bottom = 5.dp)
@@ -76,17 +136,16 @@ fun ScrollableCard() {
                 modifier = Modifier.padding(bottom = 5.dp)
             ) {
                 item {
-                    InfoCard("Studying", "💻","CompEng")
+                    InfoCard("Studying", programEmoji, program)
                 }
                 item {
-                    InfoCard("Fav Sport", "🎾", "Tennis :)")
+                    InfoCard("Hobby", hobbyEmoji, hobby)
                 }
                 item {
-                    InfoCard("Fav Food", "\uD83C\uDF55", "Pizzzza")
+                    InfoCard("One Word:", oneEmoji, oneWord)
                 }
             }
-            CustomCard("A typical sunday", "running 5 marathons in 5 countries")
-            CustomCard("Green flags I look for", "loving Netflix!")
+            CustomCard(prompt, promptAnswer)
             val imageResourceId = painterResource(id = R.drawable.walterwhite) // Obtaining resource ID
             PhotoCard(imageResourceId, 200.dp, name = "Walter")
         }

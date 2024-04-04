@@ -62,11 +62,68 @@ fun ProfileSettingsScreen(
 
         var firstname by rememberSaveable { mutableStateOf("") }
         var lastname by rememberSaveable { mutableStateOf("") }
-        var bio by rememberSaveable { mutableStateOf("") }
         var hobby by rememberSaveable { mutableStateOf("") }
-        var job by rememberSaveable { mutableStateOf("") }
         var age by rememberSaveable { mutableStateOf(18f) }
         var showAgeSlider by rememberSaveable { mutableStateOf(false) }
+        var oneWord by rememberSaveable { mutableStateOf("") }
+        var promptAnswer by rememberSaveable { mutableStateOf("") }
+        var selectedHobbyEmoji by rememberSaveable { mutableStateOf("Please select hobby emoji") }
+        var selectedProgramEmoji by rememberSaveable { mutableStateOf("Please select program emoji") }
+        var selectedOneEmoji by rememberSaveable { mutableStateOf("An emoji that describes you") }
+
+        val hobbyEmojis = listOf(
+            "\uD83C\uDF3E", // 🌾 - Gardening
+            "\uD83C\uDF54", // 🍔 - Cooking
+            "\uD83D\uDCD6", // 📖 - Reading
+            "\uD83C\uDFB5", // 🎵 - Music
+            "\u26BD",       // ⚽ - Sports
+            "\uD83D\uDCF7", // 📷 - Photography
+            "\uD83D\uDDBC", // 🖼️ - Drawing
+            "\u2708",       // ✈️ - Traveling
+            "\uD83C\uDFAE", // 🎮 - Gaming
+            "\u26F0"        // ⛰️ - Hiking
+        )
+        val randomEmojis = listOf(
+            "\uD83C\uDF75", // 🍵 - Bubble Tea
+            "\uD83E\uDD84", // 🚄 - High-Speed Train
+            "\uD83D\uDD25", // 🔥 - Fire
+            "\uD83D\uDE80", // 🚀 - Rocket
+            "\uD83D\uDE0E", // 😎 - Smiling Face with Sunglasses
+            "\uD83D\uDCDD", // 📝 - Memo
+            "\uD83D\uDEB4", // 🚴 - Person Biking
+            "\uD83D\uDCFA", // 📺 - Television
+            "\uD83D\uDC8E", // 💎 - Gem Stone
+            "\uD83D\uDD2E"  // 🔮 - Crystal Ball
+        )
+        val programEmojis = listOf(
+            "\uD83D\uDCBB", // 💻 - Computer Science
+            "\uD83D\uDD2C", // 🔬 - Engineering
+            "\uD83E\uDD13", // 🏥 - Medicine
+            "\uD83D\uDCBC", // 💼 - Business Administration
+            "\uD83D\uDC68\u200D\uD83C\uDFEB", // 👨‍⚕️ - Psychology
+            "\uD83D\uDD0E", // 📎 - Law
+            "\uD83D\uDC4C", // 👌 - Biology
+            "\uD83D\uDCB0", // 💰 - Economics
+            "\uD83D\uDCA0", // 📊 - Mathematics
+            "\uD83C\uDFA8"  // 🎨 - Fine Arts
+        )
+        val promptOptions = listOf(
+            "My idea of a perfect weekend involves...",
+            "One thing I can't live without is...",
+            "The best way to win me over is...",
+            "If I could travel anywhere tomorrow, I would go to...",
+            "My favorite way to relax is...",
+            "A hidden talent of mine is...",
+            "The last book/movie/show that made me cry/laugh/think was...",
+            "The way to my heart is through...",
+            "One thing I'm passionate about is...",
+            "If I could meet anyone, past or present, it would be..."
+        )
+        var selectedPrompt by rememberSaveable { mutableStateOf("Please select a prompt") }
+        var expandedPrompt by rememberSaveable { mutableStateOf(false) }
+        var expandedProgramEmoji by rememberSaveable { mutableStateOf(false) }
+        var expandedHobbyEmoji by rememberSaveable { mutableStateOf(false) }
+        var expandedOneEmoji by rememberSaveable { mutableStateOf(false) }
         //Dropdown states
         var expandedGender by rememberSaveable { mutableStateOf(false) }
         val genderOptions =
@@ -150,13 +207,17 @@ fun ProfileSettingsScreen(
                                 // Update mutable state variables with user data
                                 firstname = user.firstName
                                 lastname = user.lastName
-                                bio = user.bio
+                                age = user.age
                                 selectedEthnicity = user.ethnicity
                                 selectedGender = user.gender
                                 selectedProgram = user.program
+                                selectedProgramEmoji = user.programEmoji
                                 hobby = user.hobby
-                                job = user.job
-                                age = user.age
+                                selectedHobbyEmoji = user.hobbyEmoji
+                                oneWord = user.oneWord
+                                selectedOneEmoji = user.oneEmoji
+                                selectedPrompt = user.prompt
+                                promptAnswer = user.promptAnswer
 
                                 // Load image URIs
                                 imageUri = loadImageUri("profile_image_uri")
@@ -287,7 +348,6 @@ fun ProfileSettingsScreen(
                     .fillMaxWidth()
                     .padding(top = 16.dp)
             )
-            Log.d("Before", age.toString())
             //age
             val label = "Select Age"
             val ageRange = 18f..30f
@@ -324,17 +384,7 @@ fun ProfileSettingsScreen(
                     )
                 }
             }
-            Log.d("After", age.toString())
 
-            OutlinedTextField(
-                value = bio,
-                onValueChange = { bio = it },
-                label = { Text("Bio") },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)
-            )
 
             //Ethnicity
             Box(
@@ -453,6 +503,44 @@ fun ProfileSettingsScreen(
                 }
             }
 
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(Alignment.Top)
+            ) {
+                OutlinedTextField(
+                    value = selectedProgramEmoji,
+                    onValueChange = { /* ReadOnly TextField */ },
+                    label = { Text("Program Emoji") },
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable { expandedProgramEmoji = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            Modifier.clickable { expandedProgramEmoji = true }
+                        )
+                    },
+                    readOnly = true // Make TextField readonly
+                )
+                DropdownMenu(
+                    expanded = expandedProgramEmoji,
+                    onDismissRequest = { expandedProgramEmoji = false }
+                ) {
+                    programEmojis.forEach { emoji ->
+                        DropdownMenuItem(onClick = {
+                            selectedProgramEmoji = emoji
+                            expandedProgramEmoji = false
+                        }) {
+                            Text(text = emoji)
+                        }
+                    }
+                }
+            }
+
             OutlinedTextField(
                 value = hobby,
                 onValueChange = { hobby = it },
@@ -462,10 +550,130 @@ fun ProfileSettingsScreen(
                     .fillMaxWidth()
                     .padding(top = 16.dp)
             )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(Alignment.Top)
+            ) {
+                OutlinedTextField(
+                    value = selectedHobbyEmoji,
+                    onValueChange = { /* ReadOnly TextField */ },
+                    label = { Text("Hobby Emoji") },
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable { expandedHobbyEmoji = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            Modifier.clickable { expandedHobbyEmoji = true }
+                        )
+                    },
+                    readOnly = true // Make TextField readonly
+                )
+                DropdownMenu(
+                    expanded = expandedHobbyEmoji,
+                    onDismissRequest = { expandedHobbyEmoji = false }
+                ) {
+                    hobbyEmojis.forEach { emoji ->
+                        DropdownMenuItem(onClick = {
+                            selectedHobbyEmoji = emoji
+                            expandedHobbyEmoji = false
+                        }) {
+                            Text(text = emoji)
+                        }
+                    }
+                }
+            }
             OutlinedTextField(
-                value = job,
-                onValueChange = { job = it },
-                label = { Text("Job") },
+                value = oneWord,
+                onValueChange = { oneWord = it },
+                label = { Text("One Word to describe you") },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(Alignment.Top)
+            ) {
+                OutlinedTextField(
+                    value = selectedOneEmoji,
+                    onValueChange = { /* ReadOnly TextField */ },
+                    label = { Text("An emoji that describes you") },
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable { expandedOneEmoji = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            Modifier.clickable { expandedOneEmoji = true }
+                        )
+                    },
+                    readOnly = true // Make TextField readonly
+                )
+                DropdownMenu(
+                    expanded = expandedOneEmoji,
+                    onDismissRequest = { expandedOneEmoji = false }
+                ) {
+                    randomEmojis.forEach { emoji ->
+                        DropdownMenuItem(onClick = {
+                            selectedOneEmoji = emoji
+                            expandedOneEmoji = false
+                        }) {
+                            Text(text = emoji)
+                        }
+                    }
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(Alignment.Top)
+            ) {
+                OutlinedTextField(
+                    value = selectedPrompt,
+                    onValueChange = { /* ReadOnly TextField */ },
+                    label = { Text("Prompt") },
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable { expandedPrompt = true },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            Modifier.clickable { expandedPrompt = true }
+                        )
+                    },
+                    readOnly = true // Make TextField readonly
+                )
+                DropdownMenu(
+                    expanded = expandedPrompt,
+                    onDismissRequest = { expandedPrompt = false }
+                ) {
+                    promptOptions.forEach { prompt ->
+                        DropdownMenuItem(onClick = {
+                            selectedPrompt = prompt
+                            expandedPrompt = false
+                        }) {
+                            Text(text = prompt)
+                        }
+                    }
+                }
+            }
+            OutlinedTextField(
+                value = promptAnswer,
+                onValueChange = { promptAnswer = it },
+                label = { Text("Prompt Answer") },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -491,8 +699,12 @@ fun ProfileSettingsScreen(
                         gender = selectedGender,
                         program = selectedProgram,
                         hobby = hobby,
-                        job = job,
-                        bio = bio,
+                        oneWord = oneWord,
+                        oneEmoji = selectedOneEmoji,
+                        programEmoji = selectedProgramEmoji,
+                        hobbyEmoji = selectedHobbyEmoji,
+                        prompt = selectedPrompt,
+                        promptAnswer = promptAnswer,
                         profilePictureUri = imageUri?.toString() ?: "",
                         pictureUri1 = imageUri1?.toString() ?: "",
                         pictureUri2 = imageUri2?.toString() ?: "",

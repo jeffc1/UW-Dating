@@ -12,9 +12,13 @@ data class BasicUserInfo(
     val ethnicity: String = "",
     val gender: String = "",
     val program: String = "",
-    val job: String = "",
-    val bio: String = "",
+    val programEmoji: String = "",
     val hobby: String = "",
+    val hobbyEmoji: String = "",
+    val oneWord: String = "",
+    val oneEmoji: String = "",
+    val prompt: String = "",
+    val promptAnswer: String = "",
     val profilePictureUri: String = "", // For the main profile picture
     val pictureUri1: String = "", // For the first additional picture
     val pictureUri2: String = "", // For the second additional picture
