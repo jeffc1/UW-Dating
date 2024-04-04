@@ -5,11 +5,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.google.firebase.firestore.FirebaseFirestore
@@ -23,8 +27,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen(currentUserId: String, matchedUserId: String) {
+fun ChatScreen(currentUserId: String, matchedUserId: String, onBackClicked: () -> Unit) {
     val firestore = FirebaseFirestore.getInstance()
     var textState by remember { mutableStateOf("") }
     val messages: SnapshotStateList<Message> = remember { mutableStateListOf() }
@@ -32,6 +37,20 @@ fun ChatScreen(currentUserId: String, matchedUserId: String) {
     val coroutineScope = rememberCoroutineScope()
     // Create a MutableStateFlow to hold messages
     val messagesFlow = remember { MutableStateFlow<List<Message>>(emptyList()) }
+    var matchedUser by remember { mutableStateOf<User?>(null) }
+
+
+
+    // Fetch the matched user's details from Firestore
+    LaunchedEffect(matchedUserId) {
+        firestore.collection("users").document(matchedUserId).get()
+            .addOnSuccessListener { documentSnapshot ->
+                matchedUser = documentSnapshot.toObject<User>()
+            }
+            .addOnFailureListener { e ->
+                Log.e("ChatScreen", "Error fetching matched user details", e)
+            }
+    }
 
     // Fetch messages from Firestore
     DisposableEffect(key1 = currentUserId, key2 = matchedUserId) {
@@ -39,6 +58,8 @@ fun ChatScreen(currentUserId: String, matchedUserId: String) {
         val chatQuery = firestore.collection("messages")
             .whereEqualTo("chatId", chatId)
             .orderBy("timestamp", Query.Direction.ASCENDING)
+
+
 
         val listenerRegistration = chatQuery.addSnapshotListener { snapshot, error ->
             if (error != null) {
@@ -63,6 +84,17 @@ fun ChatScreen(currentUserId: String, matchedUserId: String) {
 
     // UI for chat screen
     Scaffold(
+        topBar = {
+            // Add the TopAppBar with the back button
+            SmallTopAppBar(
+                title = { Text(matchedUser?.firstName ?: "Chat") },
+                navigationIcon = {
+                    IconButton(onClick = { onBackClicked() }) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        },
         bottomBar = {
             InputBar(
                 textState = textState,
@@ -91,7 +123,10 @@ fun ChatScreen(currentUserId: String, matchedUserId: String) {
                 .padding(paddingValues)
         ) {
             items(messages) { message ->
-                MessageCard(message.text)
+                MessageCard(
+                    message = message.text,
+                    isCurrentUser = message.senderId == currentUserId
+                )
             }
         }
     }
@@ -103,26 +138,32 @@ fun generateChatId(userId1: String, userId2: String): String {
 
 // Function to send a message to Firestore
 // Adjusted send message function, non-suspending
+// Function to send a message to Firestore
 fun sendMessage(firestore: FirebaseFirestore, messageText: String, currentUserId: String, matchedUserId: String) {
-    val chatId = generateChatId(currentUserId, matchedUserId)
-    // Construct new message object
-    val newMessage = Message(
-        senderId = currentUserId,
-        receiverId = matchedUserId,
-        text = messageText,
-        timestamp = System.currentTimeMillis(),  // Use server timestamp as needed
-        chatId = chatId
-    )
+    if (currentUserId.isNotEmpty() && matchedUserId.isNotEmpty()) {
+        val chatId = generateChatId(currentUserId, matchedUserId)
+        // Construct new message object
+        val newMessage = Message(
+            senderId = currentUserId,
+            receiverId = matchedUserId,
+            text = messageText,
+            timestamp = System.currentTimeMillis(), // Use server timestamp as needed
+            chatId = chatId
+        )
 
-    // Use Firebase to add new message
-    firestore.collection("messages").add(newMessage)
-        .addOnSuccessListener { documentReference ->
-            println("Message sent with ID: ${documentReference.id}")
-        }
-        .addOnFailureListener { e ->
-            println("Failed to send message: $e")
-        }
+        // Add the new message to the Firestore collection
+        firestore.collection("messages").add(newMessage)
+            .addOnSuccessListener { documentReference ->
+                Log.d("ChatScreen", "Message sent with ID: ${documentReference.id}")
+            }
+            .addOnFailureListener { e ->
+                Log.e("ChatScreen", "Failed to send message: $e")
+            }
+    } else {
+        Log.e("ChatScreen", "Current user ID or matched user ID is empty")
+    }
 }
+
 
 // The rest of your Composable functions (InputBar, MessageCard) remain the same.
 
@@ -158,15 +199,30 @@ fun InputBar(
 
 
 @Composable
-fun MessageCard(message: String) {
-    Card(
+fun MessageCard(message: String, isCurrentUser: Boolean) {
+    val bubbleColor = if (isCurrentUser) Color(0xFF007AFF) else Color.LightGray
+    val textColor = if (isCurrentUser) Color.White else Color.Black
+    val alignment = if (isCurrentUser) Alignment.CenterEnd else Alignment.CenterStart
+
+    Box(
+        contentAlignment = alignment,
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        Text(
-            text = message,
-            modifier = Modifier.padding(8.dp)
-        )
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = bubbleColor,
+            modifier = Modifier
+                .padding(2.dp)
+        ) {
+            Text(
+                text = message,
+                color = textColor,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .widthIn(max = 300.dp) // Max width for bubble
+            )
+        }
     }
 }

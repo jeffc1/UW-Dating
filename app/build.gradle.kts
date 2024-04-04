@@ -78,6 +78,8 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     implementation ("androidx.recyclerview:recyclerview:1.2.1")
     implementation("androidx.compose.material:material:1.6.1")
+    implementation ("androidx.compose.material:material-icons-core:1.6.1")
+    implementation ("androidx.compose.material:material-icons-extended:1.6.1")
     // choose the driver for your particular database
     implementation("org.xerial:sqlite-jdbc:3.42.0.0")
     implementation("androidx.datastore:datastore-preferences:1.0.0") // Check for the latest version

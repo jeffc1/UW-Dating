@@ -125,19 +125,7 @@ fun MainScreen(client: HttpClient) {
         // FirebaseUser.getToken() instead.
         val uid = user.uid
     }
-    var matchedUserId = ""
 
-    if (user != null) {
-        if (user.uid == "mwjnyI8mTRfT287LGP0Ac7PJnbt1") {
-            matchedUserId = "k9ZcZGFZDyWMPE6ctQHBXqltkoo1"
-        }
-        else {
-            matchedUserId = "mwjnyI8mTRfT287LGP0Ac7PJnbt1"
-
-        }
-        Log.d("here", user.uid)
-    }
-    Log.d("IT WAS", "NULL")
 
     UWRizzTheme {
         val scope = rememberCoroutineScope()
@@ -155,6 +143,21 @@ fun MainScreen(client: HttpClient) {
         Log.e("checking here :", "" + isLoggedIn)
 
         var currentScreen by remember { mutableStateOf(Screen.Login) }
+        var currentChatUserId by remember { mutableStateOf<String?>(null) }  // To keep track of the current user selected for chat
+        // Define a callback for when a user is clicked in the UsersListScreen
+        val onUserClicked: (String) -> Unit = { clickedUserId ->
+            // This should log the clicked user's ID to confirm it's being set
+            Log.d("MainScreen", "User clicked: $clickedUserId")
+
+            // Set the current screen to chat and store the clicked user's ID
+            currentChatUserId = clickedUserId
+            currentScreen = Screen.Chat
+        }
+
+        val onBackFromChatClicked: () -> Unit = {
+            currentChatUserId = null // Clear the selected user ID
+            currentScreen = Screen.Chat // Go back to the users list
+        }
 
         LaunchedEffect(isLoggedIn) {
             currentScreen = if (isLoggedIn) Screen.Home else Screen.Login
@@ -206,9 +209,20 @@ fun MainScreen(client: HttpClient) {
                     when (currentScreen) {
 
                         Screen.Home -> MainContent()
-                        Screen.Chat -> if (user != null) {
-                            ChatScreen(user.uid, matchedUserId)
+                        Screen.Chat -> {
+                            if (currentChatUserId != null) {
+                                // If a user has been clicked, show the ChatScreen with the selected user ID
+                                ChatScreen(
+                                    currentUserId = user?.uid.orEmpty(),
+                                    matchedUserId = currentChatUserId.orEmpty(),
+                                    onBackClicked = onBackFromChatClicked // Pass the lambda here
+                                )
+                            } else {
+                                // Otherwise, show the UsersListScreen
+                                UsersListScreen(loggedInUserId = user?.uid.orEmpty(), onUserClicked = onUserClicked)
+                            }
                         }
+
                         Screen.Likes -> LikesScreen(exampleProfiles)
                         Screen.Profile -> ProfileSettingsScreen(
                             profileImage = ImageVector.vectorResource(R.drawable.ic_head), // Replace with your actual default image resource
