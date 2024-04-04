@@ -25,6 +25,7 @@ import androidx.compose.material3.TopAppBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainContent() {
+
     Column(
         modifier = Modifier
             .fillMaxSize()

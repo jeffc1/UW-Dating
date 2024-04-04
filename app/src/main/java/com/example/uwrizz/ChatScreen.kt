@@ -1,145 +1,121 @@
 package com.example.uwrizz
 
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import android.util.Log
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.example.uwrizz.Message
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.ktx.toObject
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.tasks.await
 
 
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.plugins.websocket.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.websocket.*
-import io.ktor.util.*
-import io.ktor.websocket.readText
-import kotlinx.coroutines.*
-
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.json.Json
-
-private var socket: WebSocketSession? = null
-suspend fun DefaultClientWebSocketSession.outputMessages() {
-    try {
-        for (message in incoming) {
-            message as? Frame.Text ?: continue
-            println(message.readText())
-        }
-    } catch (e: Exception) {
-        println("Error while receiving: " + e.localizedMessage)
-    }
-}
-
-suspend fun DefaultClientWebSocketSession.inputMessages() {
-    while (true) {
-        val message = readLine() ?: ""
-        if (message.equals("exit", true)) return
-        try {
-            send(message)
-        } catch (e: Exception) {
-            println("Error while sending: " + e.localizedMessage)
-            return
-        }
-    }
-}
-
-suspend fun sendMessage(message: String) {
-    try {
-        socket?.send(Frame.Text(message))
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen(client: HttpClient) {
+fun ChatScreen(currentUserId: String, matchedUserId: String, onBackClicked: () -> Unit) {
+    val firestore = FirebaseFirestore.getInstance()
     var textState by remember { mutableStateOf("") }
-    val messages = remember { mutableStateListOf<String>() }
+    val messages: SnapshotStateList<Message> = remember { mutableStateListOf() }
     val listState = rememberLazyListState()
-    var sendMessageRequested by remember { mutableStateOf(false) }
-    var currentMessage by remember { mutableStateOf("") }
-    var yourIP = "184.147.53.88"
-
-    // Connect to WebSocket when Composable enters the Composition
-    LaunchedEffect(Unit) {
-
-        try {
-            val existingMessages: List<Message> = client.get("http://$yourIP:8082/messages").body()
-            messages.addAll(existingMessages.map { it.text })
-        } catch (e: Exception) {
-            println("Error fetching messages: ${e.localizedMessage}")
-            println("" +client.get("http://$yourIP:8082/messages").body())
-        }
+    val coroutineScope = rememberCoroutineScope()
+    // Create a MutableStateFlow to hold messages
+    val messagesFlow = remember { MutableStateFlow<List<Message>>(emptyList()) }
+    var matchedUser by remember { mutableStateOf<User?>(null) }
 
 
 
-//        val response: HttpResponse = client.get("http://10.32.87.177:8082/messages")
-//        if (response.status == HttpStatusCode.OK) {
-//            val existingMessages = response.body<List<String>>() // Replace with the actual expected format
-//            messages.addAll(existingMessages)
-//        }
-
-        client.webSocket(
-            method = HttpMethod.Get,
-            host = "184.147.53.88",
-            port = 8082,
-            path = "/chat-socket"
-        ) {
-            socket = this
-            val currentUsername = "ReplaceWithActualUsername" // Replace with actual logic to obtain the current username
-            val messageOutputRoutine = launch { outputMessages(messages, currentUsername) }
-            messageOutputRoutine.join()
-        }
-    }
-
-    LaunchedEffect(sendMessageRequested) {
-        if (sendMessageRequested && currentMessage.isNotBlank()) {
-            try {
-                println("Attempting to send message: $currentMessage")
-                if (socket?.isActive == true) {
-                    socket?.send(Frame.Text(currentMessage))
-                    println("Message sent: $currentMessage")
-                } else {
-                    println("WebSocket session is not active. Reconnecting...")
-                    // Handle reconnection logic here
-                }
-            } catch (e: Exception) {
-                println("Failed to send message: ${e.localizedMessage}")
+    // Fetch the matched user's details from Firestore
+    LaunchedEffect(matchedUserId) {
+        firestore.collection("users").document(matchedUserId).get()
+            .addOnSuccessListener { documentSnapshot ->
+                matchedUser = documentSnapshot.toObject<User>()
             }
-            sendMessageRequested = false // Reset the request flag
+            .addOnFailureListener { e ->
+                Log.e("ChatScreen", "Error fetching matched user details", e)
+            }
+    }
+
+    // Fetch messages from Firestore
+    DisposableEffect(key1 = currentUserId, key2 = matchedUserId) {
+        val chatId = generateChatId(currentUserId, matchedUserId)
+        val chatQuery = firestore.collection("messages")
+            .whereEqualTo("chatId", chatId)
+            .orderBy("timestamp", Query.Direction.ASCENDING)
+
+
+
+        val listenerRegistration = chatQuery.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                // Handle the error
+                Log.e("ChatScreen", "Error getting messages", error)
+                return@addSnapshotListener
+            }
+            snapshot?.documents?.mapNotNull { it.toObject<Message>() }?.also { newMessages ->
+                messages.clear()
+                messages.addAll(newMessages)
+            }
+        }
+
+        onDispose {
+            listenerRegistration.remove()
         }
     }
 
-    Scaffold(
-        bottomBar = {
 
+    // Collect the messages from StateFlow and update the UI when there's a change
+    val collectedMessages = messagesFlow.asStateFlow().collectAsState()
+
+    // UI for chat screen
+    Scaffold(
+        topBar = {
+            // Add the TopAppBar with the back button
+            SmallTopAppBar(
+                title = { Text(matchedUser?.firstName ?: "Chat") },
+                navigationIcon = {
+                    IconButton(onClick = { onBackClicked() }) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        },
+        bottomBar = {
             InputBar(
                 textState = textState,
-                onTextChanged = { newText -> textState = newText.toString() },
+                onTextChanged = { newText -> textState = newText }, // Assign the newText to textState
                 onSend = {
                     if (textState.isNotBlank()) {
-                        // messages.add(textState) // Remove this line
-                        currentMessage = textState
-                        sendMessageRequested = true // Trigger the LaunchedEffect
-                        textState = "" // Clear the input field
+                        coroutineScope.launch {
+                            sendMessage(
+                                firestore = firestore,
+                                currentUserId = currentUserId,
+                                matchedUserId = matchedUserId,
+                                messageText = textState
+                            )
+                            textState = "" // Clear the input field
+                        }
                     }
                 }
             )
         }
     ) { paddingValues ->
+
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -147,37 +123,55 @@ fun ChatScreen(client: HttpClient) {
                 .padding(paddingValues)
         ) {
             items(messages) { message ->
-                MessageCard(message)
+                MessageCard(
+                    message = message.text,
+                    isCurrentUser = message.senderId == currentUserId
+                )
             }
         }
     }
 }
 
-suspend fun DefaultClientWebSocketSession.outputMessages(
-    messages: MutableList<String>,
-    currentUser: String
-) {
-    try {
-        for (frame in incoming) {
-            frame as? Frame.Text ?: continue
-            val receivedText = frame.readText()
-            val message = Json.decodeFromString<Message>(receivedText)
-            // Assuming you have a field in Message that stores the username
-            if (message.username != currentUser) {
-                val formattedMessage = "${message.username}: ${message.text}"
-                messages.add(formattedMessage)
+fun generateChatId(userId1: String, userId2: String): String {
+    return listOf(userId1, userId2).sorted().joinToString("-")
+}
+
+// Function to send a message to Firestore
+// Adjusted send message function, non-suspending
+// Function to send a message to Firestore
+fun sendMessage(firestore: FirebaseFirestore, messageText: String, currentUserId: String, matchedUserId: String) {
+    if (currentUserId.isNotEmpty() && matchedUserId.isNotEmpty()) {
+        val chatId = generateChatId(currentUserId, matchedUserId)
+        // Construct new message object
+        val newMessage = Message(
+            senderId = currentUserId,
+            receiverId = matchedUserId,
+            text = messageText,
+            timestamp = System.currentTimeMillis(), // Use server timestamp as needed
+            chatId = chatId
+        )
+
+        // Add the new message to the Firestore collection
+        firestore.collection("messages").add(newMessage)
+            .addOnSuccessListener { documentReference ->
+                Log.d("ChatScreen", "Message sent with ID: ${documentReference.id}")
             }
-        }
-    } catch (e: Exception) {
-        println("Error while receiving: " + e.localizedMessage)
+            .addOnFailureListener { e ->
+                Log.e("ChatScreen", "Failed to send message: $e")
+            }
+    } else {
+        Log.e("ChatScreen", "Current user ID or matched user ID is empty")
     }
 }
+
+
+// The rest of your Composable functions (InputBar, MessageCard) remain the same.
 
 
 @Composable
 fun InputBar(
-    textState: String, // textState is a String
-    onTextChanged: (String) -> Unit, // onTextChanged accepts and returns a String
+    textState: String,
+    onTextChanged: (String) -> Unit,
     onSend: () -> Unit
 ) {
     Row(
@@ -203,16 +197,32 @@ fun InputBar(
 }
 
 
+
 @Composable
-fun MessageCard(message: String) {
-    Card(
+fun MessageCard(message: String, isCurrentUser: Boolean) {
+    val bubbleColor = if (isCurrentUser) Color(0xFF007AFF) else Color.LightGray
+    val textColor = if (isCurrentUser) Color.White else Color.Black
+    val alignment = if (isCurrentUser) Alignment.CenterEnd else Alignment.CenterStart
+
+    Box(
+        contentAlignment = alignment,
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        Text(
-            text = message,
-            modifier = Modifier.padding(8.dp)
-        )
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = bubbleColor,
+            modifier = Modifier
+                .padding(2.dp)
+        ) {
+            Text(
+                text = message,
+                color = textColor,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .widthIn(max = 300.dp) // Max width for bubble
+            )
+        }
     }
 }

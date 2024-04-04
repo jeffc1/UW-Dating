@@ -8,10 +8,12 @@ import kotlinx.serialization.*
 
 import kotlinx.serialization.SerialName
 
-@Serializable
 data class Message(
-    @SerialName("id") val id: String,
-    val text: String,
-    val username: String,
-    val timestamp: Long
+    val id: String = "",
+    val receiverId: String = "",
+    val senderId: String = "",
+    val text: String = "",
+    val timestamp: Long = 0L, // You can also use com.google.firebase.Timestamp
+    val chatId: String = ""
 )
+
