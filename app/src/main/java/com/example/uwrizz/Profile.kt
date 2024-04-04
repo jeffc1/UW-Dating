@@ -28,66 +28,17 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.foundation.selection.selectable
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.material.icons.filled.AccountCircle
+import android.content.Context
+import android.content.SharedPreferences
 
-
-import com.example.uwrizz.R
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
-import kotlinx.coroutines.tasks.await
-
-//UserPreferenceViewModel, needs to be changed, this ensures the user can save the information
-//after clicking save" button"
 
 
-    // You can add more functions to save other types
-
-
-@Composable
-fun AgeSelector(
-    modifier: Modifier = Modifier,
-    ageRange: ClosedFloatingPointRange<Float> = 18f..30f,
-    initialAge: Float,
-    onAgeSelected: (Float) -> Unit,
-    label: String
-) {
-    var age by remember { mutableStateOf(initialAge) }
-    var showSlider by remember { mutableStateOf(false) } // State to control the visibility of the slider
-
-    Column(modifier = modifier) {
-        OutlinedTextField(
-            value = "Age: ${age.toInt()}",
-            onValueChange = {},
-            label = { Text(label) },
-            readOnly = true, // Makes it non-editable
-            trailingIcon = {
-                Icon(Icons.Default.ArrowDropDown, "Select Age", Modifier.clickable { showSlider = !showSlider })
-            },
-            modifier = Modifier
-                .clickable { showSlider = !showSlider }
-                .fillMaxWidth().padding(top = 16.dp)
-        )
-
-        // Show the Slider when the OutlinedTextField is clicked
-        if (showSlider) {
-            Slider(
-                value = age,
-                onValueChange = { age = it },
-                valueRange = ageRange,
-                steps = (ageRange.endInclusive.toInt() - ageRange.start.toInt()) - 1,
-                onValueChangeFinished = {
-                    onAgeSelected(age)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            )
-        }
-    }
-}
 
 @Composable
 fun ProfileSettingsScreen(
@@ -95,35 +46,35 @@ fun ProfileSettingsScreen(
     onImageClick: () -> Unit, // Placeholder click action for adding an image
     onImageSelected: (Uri) -> Unit,
     onNavigateToPreferences: () -> Unit,
-    onNavigateToSurvey: () -> Unit
+    onNavigateToSurvey: () -> Unit,
+    context: Context
 ) {
     UWRizzTheme {
         val db = Firebase.firestore
         val auth = FirebaseAuth.getInstance()
 
-        var imageUri by remember { mutableStateOf<Uri?>(null) }
-        var imageUri1 by remember { mutableStateOf<Uri?>(null) }
-        var imageUri2 by remember { mutableStateOf<Uri?>(null) }
-        var imageUri3 by remember { mutableStateOf<Uri?>(null) }
-        var currentImageSelection by remember { mutableStateOf(0) }
+        var imageUri by rememberSaveable{ mutableStateOf<Uri?>(null) }
+        var imageUri1 by rememberSaveable { mutableStateOf<Uri?>(null) }
+        var imageUri2 by rememberSaveable { mutableStateOf<Uri?>(null) }
+        var imageUri3 by rememberSaveable { mutableStateOf<Uri?>(null) }
+        var currentImageSelection by rememberSaveable { mutableStateOf(0) }
 
 
-        var firstname by remember { mutableStateOf("") }
-        var lastname by remember { mutableStateOf("") }
-        var bio by remember { mutableStateOf("") }
-        var hobby by remember { mutableStateOf("") }
-        var job by remember { mutableStateOf("") }
-        var age by remember { mutableStateOf(18f) } // Default initial age
-        var showAgeSlider by remember { mutableStateOf(false) }
-
+        var firstname by rememberSaveable { mutableStateOf("") }
+        var lastname by rememberSaveable { mutableStateOf("") }
+        var bio by rememberSaveable { mutableStateOf("") }
+        var hobby by rememberSaveable { mutableStateOf("") }
+        var job by rememberSaveable { mutableStateOf("") }
+        var age by rememberSaveable { mutableStateOf(18f) }
+        var showAgeSlider by rememberSaveable { mutableStateOf(false) }
         //Dropdown states
-        var expandedGender by remember { mutableStateOf(false) }
+        var expandedGender by rememberSaveable { mutableStateOf(false) }
         val genderOptions =
             listOf("Male", "Female", "Other", "Prefer not to say") // Define your options here
-        var selectedGender by remember { mutableStateOf("Please select your gender") }
+        var selectedGender by rememberSaveable { mutableStateOf("Please select your gender") }
 
         // Program dropdown states
-        var expandedProgram by remember { mutableStateOf(false) }
+        var expandedProgram by rememberSaveable { mutableStateOf(false) }
         val programOptions = listOf(
             "Arts",
             "Engineering",
@@ -132,9 +83,9 @@ fun ProfileSettingsScreen(
             "Mathematics",
             "Science"
         ) // Define your options here
-        var selectedProgram by remember { mutableStateOf("Please select your program") }
+        var selectedProgram by rememberSaveable { mutableStateOf("Please select your program") }
 
-        var expandedEthnicity by remember { mutableStateOf(false) }
+        var expandedEthnicity by rememberSaveable { mutableStateOf(false) }
         val ethnicityOptions = listOf(
             "Black/African Descent",
             "East Asian",
@@ -147,22 +98,86 @@ fun ProfileSettingsScreen(
             "White/Caucasian",
             "Other"
         ) // Define your options here
-        var selectedEthnicity by remember { mutableStateOf("Please select your ethnicity") }
+        var selectedEthnicity by rememberSaveable { mutableStateOf("Please select your ethnicity") }
 
+        val sharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
 
-        val galleryLauncher =
-            rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-                uri?.let {
-                    when (currentImageSelection) {
-                        1 -> imageUri1 = it
-                        2 -> imageUri2 = it
-                        3 -> imageUri3 = it
-                        else -> imageUri = it
+        fun saveImageUri(uri: Uri, key: String) {
+            editor.putString(key, uri.toString()).apply()
+        }
+        fun loadImageUri(key: String): Uri? {
+            val uriString = sharedPreferences.getString(key, null)
+            return uriString?.let { Uri.parse(it) }
+        }
+
+        val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let {
+                when (currentImageSelection) {
+                    1 -> {
+                        imageUri1 = it; saveImageUri(it, "image_uri_1")
+                    }
+
+                    2 -> {
+                        imageUri2 = it; saveImageUri(it, "image_uri_2")
+                    }
+
+                    3 -> {
+                        imageUri3 = it; saveImageUri(it, "image_uri_3")
+                    }
+
+                    else -> {
+                        imageUri = it; saveImageUri(it, "profile_image_uri")
                     }
                 }
             }
+        }
+
         val scrollState = rememberScrollState()
 
+        remember {
+            val userId = auth.currentUser?.uid
+            if (userId != null) {
+                val usersCollection = db.collection("users")
+                val userRef = usersCollection.whereEqualTo("userId", userId)
+
+                userRef.get()
+                    .addOnSuccessListener { querySnapshot ->
+                        if (!querySnapshot.isEmpty) {
+                            val user =
+                                querySnapshot.documents[0].toObject(BasicUserInfo::class.java)
+                            if (user != null) {
+                                // Update mutable state variables with user data
+                                firstname = user.firstName
+                                lastname = user.lastName
+                                bio = user.bio
+                                selectedEthnicity = user.ethnicity
+                                selectedGender = user.gender
+                                selectedProgram = user.program
+                                hobby = user.hobby
+                                job = user.job
+                                age = user.age
+
+                                // Load image URIs
+                                imageUri = loadImageUri("profile_image_uri")
+                                imageUri1 = loadImageUri("image_uri_1")
+                                imageUri2 = loadImageUri("image_uri_2")
+                                imageUri3 = loadImageUri("image_uri_3")
+                            }
+                        } else {
+                            Log.d(
+                                "ProfileSettingsScreen",
+                                "No matching document found for the userId"
+                            )
+                        }
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.d("ProfileSettingsScreen", "get failed with ", exception)
+                    }
+            } else {
+                Log.d("ProfileSettingsScreen", "User not authenticated or UID is null")
+            }
+        }
         Column(
             modifier = Modifier
                 .verticalScroll(scrollState) // This adds the scrolling behavior
@@ -182,21 +197,30 @@ fun ProfileSettingsScreen(
                         .size(118.dp)
                         .clip(CircleShape)
                         .border(2.dp, Color.Gray, CircleShape)
-                        .clickable { galleryLauncher.launch("image/*") } // Launch the gallery
+                        .clickable {
+                            currentImageSelection = 0 // Assign a value indicating profile picture selection
+                            galleryLauncher.launch("image/*") // Launch the gallery
+                        }
                 ) {
-                    imageUri?.let {
+                    imageUri?.let { uri ->
                         Image(
-                            painter = rememberImagePainter(it),
+                            painter = rememberImagePainter(data = uri),
                             contentDescription = "Profile picture",
-                            modifier = Modifier.size(120.dp),
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(CircleShape),
                             contentScale = ContentScale.Crop
                         )
                     } ?: Icon(
-                        imageVector = ImageVector.vectorResource(id = R.drawable.ic_headc), // Placeholder icon resource
-                        contentDescription = "Profile picture",
-                        modifier = Modifier.size(120.dp)
+                        // If imageUri is null, display a default icon to indicate profile picture upload
+                        imageVector = Icons.Default.AccountCircle, // Use the correct default icon here
+                        contentDescription = "Profile picture placeholder",
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
                     )
                 }
+
 
                 Spacer(Modifier.weight(1f)) // This pushes the button to the right
                 Column(horizontalAlignment = Alignment.End) {
@@ -246,35 +270,70 @@ fun ProfileSettingsScreen(
 
 
             OutlinedTextField(
-
                 value = firstname,
                 onValueChange = { firstname = it },
                 label = { Text("First Name") },
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
             )
             OutlinedTextField(
                 value = lastname,
                 onValueChange = { lastname = it },
                 label = { Text("Last Name") },
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
             )
-
+            Log.d("Before", age.toString())
             //age
-            AgeSelector(
-                ageRange = 18f..30f, // This is the range of the slider
-                initialAge = age, // Pass the initial age, it could be a state if you need to remember it
-                onAgeSelected = {
-                    age = it // Update the age when the user has finished selecting a new age
-                    showAgeSlider = false // Hide the slider
-                },
-                label = "Select Age"
-            )
+            val label = "Select Age"
+            val ageRange = 18f..30f
+            var showSlider by remember { mutableStateOf(false) } // State to control the visibility of the slider
+
+            Column() {
+                OutlinedTextField(
+                    value = "Age: ${age.toInt()}",
+                    onValueChange = {},
+                    label = { Text(label) },
+                    readOnly = true, // Makes it non-editable
+                    trailingIcon = {
+                        Icon(Icons.Default.ArrowDropDown, "Select Age", Modifier.clickable { showSlider = !showSlider })
+                    },
+                    modifier = Modifier
+                        .clickable { showSlider = !showSlider }
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                )
+                // Show the Slider when the OutlinedTextField is clicked
+                if (showSlider) {
+                    Slider(
+                        value = age,
+                        onValueChange = { age = it },
+                        valueRange = ageRange,
+                        steps = (ageRange.endInclusive.toInt() - ageRange.start.toInt()) - 1,
+                        onValueChangeFinished = {
+                            age = age
+                            showAgeSlider = false
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    )
+                }
+            }
+            Log.d("After", age.toString())
 
             OutlinedTextField(
                 value = bio,
                 onValueChange = { bio = it },
                 label = { Text("Bio") },
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
             )
 
             //Ethnicity
@@ -287,6 +346,7 @@ fun ProfileSettingsScreen(
                     value = selectedEthnicity,
                     onValueChange = { /* ReadOnly TextField */ },
                     label = { Text("Ethnicity") },
+                    singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)
@@ -325,6 +385,7 @@ fun ProfileSettingsScreen(
                     value = selectedGender,
                     onValueChange = { /* ReadOnly TextField */ },
                     label = { Text("Gender") },
+                    singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)
@@ -363,6 +424,7 @@ fun ProfileSettingsScreen(
                     value = selectedProgram,
                     onValueChange = { /* ReadOnly TextField */ },
                     label = { Text("Program") },
+                    singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)
@@ -395,13 +457,19 @@ fun ProfileSettingsScreen(
                 value = hobby,
                 onValueChange = { hobby = it },
                 label = { Text("Hobby") },
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
             )
             OutlinedTextField(
                 value = job,
                 onValueChange = { job = it },
                 label = { Text("Job") },
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
             )
             // Save button
             Button(
@@ -413,20 +481,31 @@ fun ProfileSettingsScreen(
                         return@Button
                     }
                     val usersCollection = db.collection("users")
-                    val userRef = usersCollection.whereEqualTo("id", userId)
+                    val userRef = usersCollection.whereEqualTo("userId", userId)
+                    val updatedUser = BasicUserInfo(
+                        userId = userId,
+                        firstName = firstname,
+                        lastName = lastname,
+                        age = age,
+                        ethnicity = selectedEthnicity,
+                        gender = selectedGender,
+                        program = selectedProgram,
+                        hobby = hobby,
+                        job = job,
+                        bio = bio,
+                        profilePictureUri = imageUri?.toString() ?: "",
+                        pictureUri1 = imageUri1?.toString() ?: "",
+                        pictureUri2 = imageUri2?.toString() ?: "",
+                        pictureUri3 = imageUri3?.toString() ?: ""
+                    )
                     userRef.get()
                         .addOnSuccessListener { querySnapshot ->
-                            for (document in querySnapshot.documents) {
-                                usersCollection.document(document.id)
-                                    .update(
-                                        "lastName", lastname,
-                                        "bio", bio,
-                                        "gender", selectedGender,
-                                        "program", selectedProgram,
-                                        "hobby", hobby,
-                                        "job", job,
-                                        "profilePictureUri", imageUri1
-                                    )
+                            // Assuming only one document should match the query
+                            val document = querySnapshot.documents.firstOrNull()
+                            if (document != null) {
+                                val docId = document.id // Get the document ID
+                                usersCollection.document(docId)
+                                    .set(updatedUser) // Update the document with updatedUser data
                                     .addOnSuccessListener {
                                         Log.d("Profile", "DocumentSnapshot successfully updated!")
                                         // Handle success
@@ -435,6 +514,8 @@ fun ProfileSettingsScreen(
                                         Log.w("Profile", "Error updating document", e)
                                         // Handle failure
                                     }
+                            } else {
+                                Log.d("Profile", "No matching document found for the userId")
                             }
                         }
                         .addOnFailureListener { exception ->
@@ -451,20 +532,6 @@ fun ProfileSettingsScreen(
     }
 }
 
-
-
-//Database interaction
-data class UserProfile(
-    val id: Long = 0,
-    val firstName: String,
-    val lastName: String,
-    val bio: String,
-    val gender: String,
-    val program: String,
-    val hobby: String,
-    val Job: String,
-    val profilePictureUri: String? // Store the URI of the profile picture
-)
 
 
 //Image selection
@@ -552,7 +619,12 @@ fun MultiSelect(
                         .fillMaxWidth()
                         .selectable(
                             selected = selectedOptions.contains(option),
-                            onClick = { onOptionSelected(option, !selectedOptions.contains(option)) }
+                            onClick = {
+                                onOptionSelected(
+                                    option,
+                                    !selectedOptions.contains(option)
+                                )
+                            }
                         )
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -573,664 +645,5 @@ fun MultiSelect(
         }
     }
 }
-
-@Composable
-fun PreferencesScreen(
-    onNavigateToProfile: () -> Unit
-) {
-    val scrollState = rememberScrollState()
-
-    var age by remember { mutableStateOf(18f) } // Default initial age
-    var age2 by remember { mutableStateOf(30f) }
-    var showAgeSlider by remember { mutableStateOf(false) }
-
-    val genderOptions2 = listOf("Male", "Female", "Other") // Define your options here
-    var selectGenders2 by remember {mutableStateOf(listOf<String>()) }
-
-    val programOptions2 = listOf("Arts", "Engineering", "Environment", "Health", "Mathematics", "Science") // Define your options here
-    var selectedPrograms2 by remember {mutableStateOf(listOf<String>()) }
-
-    val ethnicityOptions2 = listOf("Black/African Descent", "East Asian", "Hispanic/Latino",
-        "Middle Eastern", "Native", "Pacific Islander", "South Asian", "South East Asian", "White/Caucasian", "Other") // Define your options here
-    var selectedEthnicity2 by remember { mutableStateOf(listOf<String>())}
-
-    Column(
-        modifier = Modifier
-            .verticalScroll(scrollState) // This adds the scrolling behavior
-            .fillMaxHeight() // This makes the Column fill the available height
-            .padding(16.dp) // Replace with your desired padding
-    ) {
-        Spacer(Modifier.weight(1f)) // This is used for layout purposes
-        Button(
-            onClick = onNavigateToProfile,
-            modifier = Modifier
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) { // Align icon and text vertically
-                Icon(
-                    ImageVector.vectorResource(id = R.drawable.ic_arrow), // Replace with your icon's resource ID
-                    contentDescription = "Edit Profile" // Accessibility description
-                )
-                Spacer(Modifier.width(4.dp)) // Add some spacing between the icon and the text
-                Text("Profile") // Text following the icon
-            }
-        }
-
-        Spacer(modifier = Modifier.height(50.dp))
-        Text("Preference Settings", style = MaterialTheme.typography.h5)
-        Spacer(modifier = Modifier.height(24.dp))
-
-        MultiSelect(
-            options = genderOptions2,
-            selectedOptions = selectGenders2,
-            onOptionSelected = { option, isSelected ->
-                selectGenders2 = if (isSelected) {
-                    selectGenders2 + option
-                } else {
-                    selectGenders2 - option
-                }
-            },
-            label = "I'm Interested In (Gender)"
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        MultiSelect(
-            options = ethnicityOptions2,
-            selectedOptions = selectedEthnicity2,
-            onOptionSelected = { option, isSelected ->
-                selectedEthnicity2 = if (isSelected) {
-                    selectedEthnicity2 + option
-                } else {
-                    selectedEthnicity2 - option
-                }
-            },
-            label = "I'm Interested In (Ethnicity)"
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        MultiSelect(
-            options = programOptions2,
-            selectedOptions = selectedPrograms2,
-            onOptionSelected = { option, isSelected ->
-                selectedPrograms2 = if (isSelected) {
-                    selectedPrograms2 + option
-                } else {
-                    selectedPrograms2 - option
-                }
-            },
-            label = "I'm Interested In (Program)"
-        )
-
-
-        AgeSelector(
-            ageRange = 18f..30f, // This is the range of the slider
-            initialAge = age, // Pass the initial age, it could be a state if you need to remember it
-            onAgeSelected = {
-                age = it // Update the age when the user has finished selecting a new age
-                showAgeSlider = false // Hide the slider
-            },
-            label = "Select Preferred Minimum Age"
-        )
-        AgeSelector(
-            ageRange = 18f..30f, // This is the range of the slider
-            initialAge = age2, // Pass the initial age, it could be a state if you need to remember it
-            onAgeSelected = {
-                age = it // Update the age when the user has finished selecting a new age
-                showAgeSlider = false // Hide the slider
-            },
-            label = "Select Preferred Maximum Age"
-        )
-
-        // Save button
-        Button(
-            onClick = {
-                // Add logic here to save the profile settings
-                // You can use the values of the mutable state variables like firstname, lastname, etc. to update the user's profile in the database
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp)
-        ) {
-            Text("Save")
-        }
-    }
-}
-@Composable
-fun SurveyScreen(
-    onNavigateToProfile: () -> Unit
-) {
-    val scrollState = rememberScrollState()
-
-    var Question1 by remember { mutableStateOf(false) }
-    var Question2 by remember { mutableStateOf(false) }
-    var Question3 by remember { mutableStateOf(false) }
-    var Question4 by remember { mutableStateOf(false) }
-    var Question5 by remember { mutableStateOf(false) }
-    var Question6 by remember { mutableStateOf(false) }
-    var Question7 by remember { mutableStateOf(false) }
-    var Question8 by remember { mutableStateOf(false) }
-    var Question9 by remember { mutableStateOf(false) }
-    var Question10 by remember { mutableStateOf(false) }
-    val QuestionOptions = listOf("Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree") // Define your options here
-    var answer1 by remember {mutableStateOf("Please select your answer") }
-    var answer2 by remember {mutableStateOf("Please select your answer") }
-    var answer3 by remember {mutableStateOf("Please select your answer") }
-    var answer4 by remember {mutableStateOf("Please select your answer") }
-    var answer5 by remember {mutableStateOf("Please select your answer") }
-    var answer6 by remember {mutableStateOf("Please select your answer") }
-    var answer7 by remember {mutableStateOf("Please select your answer") }
-    var answer8 by remember {mutableStateOf("Please select your answer") }
-    var answer9 by remember {mutableStateOf("Please select your answer") }
-    var answer10 by remember {mutableStateOf("Please select your answer") }
-
-
-
-    Column(
-        modifier = Modifier
-            .verticalScroll(scrollState) // This adds the scrolling behavior
-            .fillMaxHeight() // This makes the Column fill the available height
-            .padding(16.dp) // Replace with your desired padding
-    ) {
-        Spacer(Modifier.weight(1f)) // This is used for layout purposes
-        Button(
-            onClick = onNavigateToProfile,
-            modifier = Modifier
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) { // Align icon and text vertically
-                Icon(
-                    ImageVector.vectorResource(id = R.drawable.ic_arrow), // Replace with your icon's resource ID
-                    contentDescription = "Edit Profile" // Accessibility description
-                )
-                Spacer(Modifier.width(4.dp)) // Add some spacing between the icon and the text
-                Text("Profile") // Text following the icon
-            }
-        }
-
-        Spacer(modifier = Modifier.height(50.dp))
-        Text("Survey Questions", style = MaterialTheme.typography.h5)
-        Spacer(modifier = Modifier.height(32.dp))
-
-        //Question1
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(Alignment.Top)
-        ){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(align = Alignment.Top)
-            ) {
-                Text("Question 1", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
-
-                OutlinedTextField(
-                    value = answer1,
-                    onValueChange = { /* ReadOnly TextField */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                        .clickable { Question1 = true },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowDropDown,
-                            contentDescription = "Dropdown",
-                            Modifier.clickable { Question1 = true }
-                        )
-                    },
-                    readOnly = true // Make TextField readonly
-                )
-                DropdownMenu(
-                    expanded = Question1,
-                    onDismissRequest = { Question1 = false }
-                ) {
-                    QuestionOptions.forEach { question1 ->
-                        DropdownMenuItem(onClick = {
-                            answer1 = question1
-                            Question1 = false
-                        }) {
-                            Text(text = question1)
-                        }
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        //Question2
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(Alignment.Top)
-        ){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(align = Alignment.Top)
-            ) {
-                Text("Question 2", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
-
-                OutlinedTextField(
-                    value = answer2,
-                    onValueChange = { /* ReadOnly TextField */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                        .clickable { Question2 = true },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowDropDown,
-                            contentDescription = "Dropdown",
-                            Modifier.clickable { Question2 = true }
-                        )
-                    },
-                    readOnly = true // Make TextField readonly
-                )
-                DropdownMenu(
-                    expanded = Question2,
-                    onDismissRequest = { Question2 = false }
-                ) {
-                    QuestionOptions.forEach { question2 ->
-                        DropdownMenuItem(onClick = {
-                            answer2 = question2
-                            Question2 = false
-                        }) {
-                            Text(text = question2)
-                        }
-                    }
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(20.dp))
-
-        //Question3
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(Alignment.Top)
-        ){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(align = Alignment.Top)
-            ) {
-                Text("Question 3", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
-
-                OutlinedTextField(
-                    value = answer3,
-                    onValueChange = { /* ReadOnly TextField */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                        .clickable { Question3 = true },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowDropDown,
-                            contentDescription = "Dropdown",
-                            Modifier.clickable { Question3 = true }
-                        )
-                    },
-                    readOnly = true // Make TextField readonly
-                )
-                DropdownMenu(
-                    expanded = Question3,
-                    onDismissRequest = { Question3 = false }
-                ) {
-                    QuestionOptions.forEach { question3 ->
-                        DropdownMenuItem(onClick = {
-                            answer3 = question3
-                            Question3 = false
-                        }) {
-                            Text(text = question3)
-                        }
-                    }
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(20.dp))
-
-        //Question4
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(Alignment.Top)
-        ){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(align = Alignment.Top)
-            ) {
-                Text("Question 4", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
-
-                OutlinedTextField(
-                    value = answer4,
-                    onValueChange = { /* ReadOnly TextField */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                        .clickable { Question2 = true },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowDropDown,
-                            contentDescription = "Dropdown",
-                            Modifier.clickable { Question4 = true }
-                        )
-                    },
-                    readOnly = true // Make TextField readonly
-                )
-                DropdownMenu(
-                    expanded = Question4,
-                    onDismissRequest = { Question4 = false }
-                ) {
-                    QuestionOptions.forEach { question4 ->
-                        DropdownMenuItem(onClick = {
-                            answer4 = question4
-                            Question1 = false
-                        }) {
-                            Text(text = question4)
-                        }
-                    }
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(20.dp))
-
-        //Question5
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(Alignment.Top)
-        ){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(align = Alignment.Top)
-            ) {
-                Text("Question 5", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
-
-                OutlinedTextField(
-                    value = answer5,
-                    onValueChange = { /* ReadOnly TextField */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                        .clickable { Question5 = true },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowDropDown,
-                            contentDescription = "Dropdown",
-                            Modifier.clickable { Question5 = true }
-                        )
-                    },
-                    readOnly = true // Make TextField readonly
-                )
-                DropdownMenu(
-                    expanded = Question5,
-                    onDismissRequest = { Question5 = false }
-                ) {
-                    QuestionOptions.forEach { question5 ->
-                        DropdownMenuItem(onClick = {
-                            answer5 = question5
-                            Question1 = false
-                        }) {
-                            Text(text = question5)
-                        }
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        //Question6
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(Alignment.Top)
-        ){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(align = Alignment.Top)
-            ) {
-                Text("Question 6", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
-
-                OutlinedTextField(
-                    value = answer6,
-                    onValueChange = { /* ReadOnly TextField */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                        .clickable { Question6 = true },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowDropDown,
-                            contentDescription = "Dropdown",
-                            Modifier.clickable { Question6 = true }
-                        )
-                    },
-                    readOnly = true // Make TextField readonly
-                )
-                DropdownMenu(
-                    expanded = Question6,
-                    onDismissRequest = { Question6 = false }
-                ) {
-                    QuestionOptions.forEach { question6 ->
-                        DropdownMenuItem(onClick = {
-                            answer6 = question6
-                            Question6 = false
-                        }) {
-                            Text(text = question6)
-                        }
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        //Question7
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(Alignment.Top)
-        ){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(align = Alignment.Top)
-            ) {
-                Text("Question 7", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
-
-                OutlinedTextField(
-                    value = answer7,
-                    onValueChange = { /* ReadOnly TextField */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                        .clickable { Question7 = true },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowDropDown,
-                            contentDescription = "Dropdown",
-                            Modifier.clickable { Question7 = true }
-                        )
-                    },
-                    readOnly = true // Make TextField readonly
-                )
-                DropdownMenu(
-                    expanded = Question7,
-                    onDismissRequest = { Question7 = false }
-                ) {
-                    QuestionOptions.forEach { question7->
-                        DropdownMenuItem(onClick = {
-                            answer7 = question7
-                            Question7 = false
-                        }) {
-                            Text(text = question7)
-                        }
-                    }
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(20.dp))
-
-        //Question8
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(Alignment.Top)
-        ){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(align = Alignment.Top)
-            ) {
-                Text("Question 8", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
-
-                OutlinedTextField(
-                    value = answer8,
-                    onValueChange = { /* ReadOnly TextField */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                        .clickable { Question2 = true },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowDropDown,
-                            contentDescription = "Dropdown",
-                            Modifier.clickable { Question8 = true }
-                        )
-                    },
-                    readOnly = true // Make TextField readonly
-                )
-                DropdownMenu(
-                    expanded = Question8,
-                    onDismissRequest = { Question8 = false }
-                ) {
-                    QuestionOptions.forEach { question8 ->
-                        DropdownMenuItem(onClick = {
-                            answer8 = question8
-                            Question8 = false
-                        }) {
-                            Text(text = question8)
-                        }
-                    }
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(20.dp))
-
-        //Question9
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(Alignment.Top)
-        ){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(align = Alignment.Top)
-            ) {
-                Text("Question 9", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
-
-                OutlinedTextField(
-                    value = answer9,
-                    onValueChange = { /* ReadOnly TextField */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                        .clickable { Question2 = true },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowDropDown,
-                            contentDescription = "Dropdown",
-                            Modifier.clickable { Question9 = true }
-                        )
-                    },
-                    readOnly = true // Make TextField readonly
-                )
-                DropdownMenu(
-                    expanded = Question9,
-                    onDismissRequest = { Question9 = false }
-                ) {
-                    QuestionOptions.forEach { question9 ->
-                        DropdownMenuItem(onClick = {
-                            answer9 = question9
-                            Question9 = false
-                        }) {
-                            Text(text = question9)
-                        }
-                    }
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(20.dp))
-
-        //Question10
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(Alignment.Top)
-        ){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(align = Alignment.Top)
-            ) {
-                Text("Question 10", style = MaterialTheme.typography.h5.copy(fontSize = 16.sp))
-
-                OutlinedTextField(
-                    value = answer10,
-                    onValueChange = { /* ReadOnly TextField */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                        .clickable { Question2 = true },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowDropDown,
-                            contentDescription = "Dropdown",
-                            Modifier.clickable { Question2 = true }
-                        )
-                    },
-                    readOnly = true // Make TextField readonly
-                )
-                DropdownMenu(
-                    expanded = Question10,
-                    onDismissRequest = { Question10 = false }
-                ) {
-                    QuestionOptions.forEach { question10 ->
-                        DropdownMenuItem(onClick = {
-                            answer10 = question10
-                            Question10 = false
-                        }) {
-                            Text(text = question10)
-                        }
-                    }
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // Save button
-        Button(
-            onClick = {
-                //action to be filled for the save button
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp)
-        ) {
-            Text("Save")
-        }
-    }
-}
-
-suspend fun fetchUserData(userId: String): User? {
-    return try {
-        val userDocument = Firebase.firestore.collection("users").document(userId).get().await()
-        userDocument.toObject(User::class.java)
-    } catch (e: Exception) {
-        Log.e("Firestore", "Error fetching user data", e)
-        null
-    }
-}
-
-
-
-
-
 
 

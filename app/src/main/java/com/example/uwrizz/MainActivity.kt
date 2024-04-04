@@ -4,6 +4,8 @@ package com.example.uwrizz
 
 // Import everything that's necessary
 import UserDatabaseHelper
+import PreferencesScreen
+import SurveyScreen
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -241,7 +243,8 @@ fun MainScreen(client: HttpClient) {
                             },
                             onNavigateToSurvey = {
                                 currentScreen = Screen.Survey
-                            }
+                            },
+                            context = context
                         )
 
                         Screen.Preferences -> PreferencesScreen(

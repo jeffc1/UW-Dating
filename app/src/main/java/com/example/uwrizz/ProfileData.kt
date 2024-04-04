@@ -1,36 +1,39 @@
 package com.example.uwrizz
 
-import com.example.uwrizz.ui.theme.UWRizzTheme
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.auth.FirebaseAuth
 
 data class BasicUserInfo(
     // Firebase requires a no-argument constructor for Data classes, so provide default values.
     val userId: String = "",
     val firstName: String = "",
     val lastName: String = "",
-    val age: Int = 0,
+    val age: Float = 0f,
     val ethnicity: String = "",
     val gender: String = "",
     val program: String = "",
     val job: String = "",
-    val bio: String = ""
+    val bio: String = "",
+    val hobby: String = "",
+    val profilePictureUri: String = "", // For the main profile picture
+    val pictureUri1: String = "", // For the first additional picture
+    val pictureUri2: String = "", // For the second additional picture
+    val pictureUri3: String = "" // For the third additional picture
 )
+
 
 data class UserPreference(
     val userId: String = "",
-    val interestedInGender: String = "",
-    val interestedInEthnicity: String = "",
-    val interestedInProgram: String = "",
+    val interestedInGender: List<String> = listOf(),
+    val interestedInEthnicity: List<String> = listOf(),
+    val interestedInProgram: List<String> = listOf(),
     val agePreferenceMin: Int = 0,
     val agePreferenceMax: Int = 0
 )
 
 data class SurveyAnswers(
     val userId: String = "",
-    val answers: Map<String, String> = emptyMap()
+    val answers: List<Int> = listOf()
 )
 
 class ProfileRepository {
