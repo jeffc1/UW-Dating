@@ -38,6 +38,11 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.ktx.storage
 import com.google.firebase.storage.storage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
+
 
 
 @Composable
@@ -66,6 +71,7 @@ fun ProfileSettingsScreen(
 
 
         var firstname by rememberSaveable { mutableStateOf("") }
+        var firstnameError by remember { mutableStateOf(false) }
         var lastname by rememberSaveable { mutableStateOf("") }
         var hobby by rememberSaveable { mutableStateOf("") }
         var age by rememberSaveable { mutableStateOf(18f) }
@@ -73,8 +79,11 @@ fun ProfileSettingsScreen(
         var oneWord by rememberSaveable { mutableStateOf("") }
         var promptAnswer by rememberSaveable { mutableStateOf("") }
         var selectedHobbyEmoji by rememberSaveable { mutableStateOf("Please select hobby emoji") }
+        var hEmojiError by remember { mutableStateOf(false) }
         var selectedProgramEmoji by rememberSaveable { mutableStateOf("Please select program emoji") }
+        var pEmojiError by remember { mutableStateOf(false) }
         var selectedOneEmoji by rememberSaveable { mutableStateOf("An emoji that describes you") }
+        var oEmojiError by remember { mutableStateOf(false) }
 
         val hobbyEmojis = listOf(
             "\uD83C\uDF3E", // 🌾 - Gardening
@@ -134,6 +143,7 @@ fun ProfileSettingsScreen(
         val genderOptions =
             listOf("Male", "Female", "Other", "Prefer not to say") // Define your options here
         var selectedGender by rememberSaveable { mutableStateOf("Please select your gender") }
+        var GenderError by remember { mutableStateOf(false) }
 
         // Program dropdown states
         var expandedProgram by rememberSaveable { mutableStateOf(false) }
@@ -146,6 +156,7 @@ fun ProfileSettingsScreen(
             "Science"
         ) // Define your options here
         var selectedProgram by rememberSaveable { mutableStateOf("Please select your program") }
+        var ProgramError by remember { mutableStateOf(false) }
 
         var expandedEthnicity by rememberSaveable { mutableStateOf(false) }
         val ethnicityOptions = listOf(
@@ -161,6 +172,9 @@ fun ProfileSettingsScreen(
             "Other"
         ) // Define your options here
         var selectedEthnicity by rememberSaveable { mutableStateOf("Please select your ethnicity") }
+        var ethnicityError by remember { mutableStateOf(false) }
+        var showError by remember { mutableStateOf(false) }
+
 
         val sharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
@@ -353,14 +367,38 @@ fun ProfileSettingsScreen(
 
             OutlinedTextField(
                 value = firstname,
-                onValueChange = { firstname = it },
-                label = { Text("First Name") },
+                onValueChange = {
+                    firstname = it
+                    firstnameError = it.isBlank() // Update error state
+                },
+                label = { Text("First Name*") },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp),
-                colors = red
+                isError = firstnameError, // Set error state
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    // Define colors for different states
+                    textColor = Color.Black,
+                    disabledTextColor = Color.Gray,
+                    backgroundColor = Color.Transparent,
+                    cursorColor = Color.Black,
+                    errorCursorColor = MaterialTheme.colors.error,
+                    focusedBorderColor = Color.Red, // Default color for the border when focused
+                    unfocusedBorderColor = Color.Red, // Default color for the border when not focused
+                    errorBorderColor = MaterialTheme.colors.error, // Color for the border when in error state
+                    // You may need to set other colors as well, depending on your design requirements
+                )
             )
+            if (firstnameError) {
+                Text(
+                    text = "First Name is required",
+                    color = MaterialTheme.colors.error,
+                    style = MaterialTheme.typography.caption,
+                    modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                )
+            }
+
             OutlinedTextField(
                 value = lastname,
                 onValueChange = { lastname = it },
@@ -372,7 +410,7 @@ fun ProfileSettingsScreen(
                 colors = red
             )
             //age
-            val label = "Select Age"
+            val label = "Select Age*"
             val ageRange = 18f..30f
             var showSlider by remember { mutableStateOf(false) } // State to control the visibility of the slider
 
@@ -419,7 +457,7 @@ fun ProfileSettingsScreen(
                 OutlinedTextField(
                     value = selectedEthnicity,
                     onValueChange = { /* ReadOnly TextField */ },
-                    label = { Text("Ethnicity") },
+                    label = { Text("Ethnicity*") },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -433,8 +471,18 @@ fun ProfileSettingsScreen(
                         )
                     },
                     readOnly = true,
-                    colors = red
-                    // Make TextField readonly
+                    isError = ethnicityError, // Set error state for the field
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        // Define colors for different states
+                        textColor = Color.Black,
+                        disabledTextColor = Color.Gray,
+                        backgroundColor = Color.Transparent,
+                        cursorColor = Color.Black,
+                        errorCursorColor = MaterialTheme.colors.error,
+                        focusedBorderColor = MaterialTheme.colors.primary,
+                        unfocusedBorderColor = Color.Gray,
+                        errorBorderColor = MaterialTheme.colors.error,
+                    )
                 )
                 DropdownMenu(
                     expanded = expandedEthnicity,
@@ -444,11 +492,15 @@ fun ProfileSettingsScreen(
                         DropdownMenuItem(onClick = {
                             selectedEthnicity = ethnicity
                             expandedEthnicity = false
+                            ethnicityError = false // Reset error state when ethnicity is selected
                         }) {
                             Text(text = ethnicity)
                         }
                     }
                 }
+            }
+            if (selectedEthnicity.isEmpty()) {
+                ethnicityError = true // Set error state if ethnicity is empty
             }
 
             //Gender
@@ -460,7 +512,7 @@ fun ProfileSettingsScreen(
                 OutlinedTextField(
                     value = selectedGender,
                     onValueChange = { /* ReadOnly TextField */ },
-                    label = { Text("Gender") },
+                    label = { Text("Gender*") },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -474,7 +526,8 @@ fun ProfileSettingsScreen(
                         )
                     },
                     readOnly = true,
-                    colors = red// Make TextField readonly
+                    colors = red
+                    // Make TextField readonly
                 )
                 DropdownMenu(
                     expanded = expandedGender,
@@ -490,6 +543,9 @@ fun ProfileSettingsScreen(
                     }
                 }
             }
+            if (selectedGender.isEmpty()) {
+                GenderError = true // Set error state if ethnicity is empty
+            }
 
             //Program
             Box(
@@ -500,7 +556,7 @@ fun ProfileSettingsScreen(
                 OutlinedTextField(
                     value = selectedProgram,
                     onValueChange = { /* ReadOnly TextField */ },
-                    label = { Text("Program") },
+                    label = { Text("Program*") },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -530,6 +586,10 @@ fun ProfileSettingsScreen(
                     }
                 }
             }
+            if (selectedProgram.isEmpty()) {
+                ProgramError = true // Set error state if ethnicity is empty
+            }
+
 
             Box(
                 modifier = Modifier
@@ -539,7 +599,7 @@ fun ProfileSettingsScreen(
                 OutlinedTextField(
                     value = selectedProgramEmoji,
                     onValueChange = { /* ReadOnly TextField */ },
-                    label = { Text("Program Emoji") },
+                    label = { Text("Program Emoji*") },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -569,6 +629,9 @@ fun ProfileSettingsScreen(
                     }
                 }
             }
+            if (selectedProgramEmoji.isEmpty()) {
+                pEmojiError = true // Set error state if ethnicity is empty
+            }
 
             OutlinedTextField(
                 value = hobby,
@@ -588,7 +651,7 @@ fun ProfileSettingsScreen(
                 OutlinedTextField(
                     value = selectedHobbyEmoji,
                     onValueChange = { /* ReadOnly TextField */ },
-                    label = { Text("Hobby Emoji") },
+                    label = { Text("Hobby Emoji*") },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -619,6 +682,10 @@ fun ProfileSettingsScreen(
                     }
                 }
             }
+            if (selectedHobbyEmoji.isEmpty()) {
+                hEmojiError = true // Set error state if ethnicity is empty
+            }
+
             OutlinedTextField(
                 value = oneWord,
                 onValueChange = { oneWord = it },
@@ -637,7 +704,7 @@ fun ProfileSettingsScreen(
                 OutlinedTextField(
                     value = selectedOneEmoji,
                     onValueChange = { /* ReadOnly TextField */ },
-                    label = { Text("An emoji that describes you") },
+                    label = { Text("An emoji that describes you*") },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -667,6 +734,10 @@ fun ProfileSettingsScreen(
                     }
                 }
             }
+            if (selectedOneEmoji.isEmpty()) {
+                oEmojiError = true // Set error state if ethnicity is empty
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -715,71 +786,108 @@ fun ProfileSettingsScreen(
                     .padding(top = 16.dp),
                 colors = red
             )
+            if (showError) {
+                AlertDialog(
+                    onDismissRequest = {
+                        showError = false // Dismiss the dialog when the user clicks outside it or on the dismiss button
+                    },
+                    title = {
+                        Text(text = "Missing Information")
+                    },
+                    text = {
+                        Text("Please fill in the required field(s)*.")
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                showError = false // Dismiss dialog when the user clicks the confirm button
+                            }
+                        ) {
+                            Text("OK")
+                        }
+                    }
+                )
+            }
             // Save button
             Button(
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E)),
                 onClick = {
-                    val userId = auth.currentUser?.uid
-                    if (userId == null) {
-                        // Handle the case where the user is not authenticated or the UID is null
-                        Log.e("Profile", "User not authenticated or UID is null")
-                        return@Button
-                    }
-                    val usersCollection = db.collection("users")
-                    val userRef = usersCollection.whereEqualTo("userId", userId)
-                    val updatedUser = BasicUserInfo(
-                        userId = userId,
-                        firstName = firstname,
-                        lastName = lastname,
-                        age = age,
-                        ethnicity = selectedEthnicity,
-                        gender = selectedGender,
-                        program = selectedProgram,
-                        hobby = hobby,
-                        oneWord = oneWord,
-                        oneEmoji = selectedOneEmoji,
-                        programEmoji = selectedProgramEmoji,
-                        hobbyEmoji = selectedHobbyEmoji,
-                        prompt = selectedPrompt,
-                        promptAnswer = promptAnswer,
-                        profilePictureUri = imageUri?.toString() ?: "",
-                        pictureUri1 = imageUri1?.toString() ?: "",
-                        pictureUri2 = imageUri2?.toString() ?: "",
-                        pictureUri3 = imageUri3?.toString() ?: ""
-                    )
-                    userRef.get()
-                        .addOnSuccessListener { querySnapshot ->
-                            // Assuming only one document should match the query
-                            val document = querySnapshot.documents.firstOrNull()
-                            if (document != null) {
-                                val docId = document.id // Get the document ID
-                                usersCollection.document(docId)
-                                    .set(updatedUser) // Update the document with updatedUser data
-                                    .addOnSuccessListener {
-                                        Log.d("Profile", "DocumentSnapshot successfully updated!")
-                                        // Handle success
-                                    }
-                                    .addOnFailureListener { e ->
-                                        Log.w("Profile", "Error updating document", e)
-                                        // Handle failure
-                                    }
-                            } else {
-                                Log.d("Profile", "No matching document found for the userId")
+                    firstnameError = firstname.isBlank()
+                    ethnicityError = selectedEthnicity.isBlank()
+                    GenderError = selectedGender.isBlank()
+                    ProgramError = selectedProgram.isBlank()
+                    pEmojiError = selectedProgramEmoji.isBlank()
+                    hEmojiError = selectedHobbyEmoji.isBlank()
+                    oEmojiError = selectedOneEmoji.isBlank()
+                    if ( firstnameError || ethnicityError|| GenderError ||
+                        ProgramError || pEmojiError || hEmojiError || oEmojiError) {
+                        showError = true // Show the dialog when validation fails
+                    } else {
+                        val userId = auth.currentUser?.uid
+                        if (userId == null) {
+                            // Handle the case where the user is not authenticated or the UID is null
+                            Log.e("Profile", "User not authenticated or UID is null")
+                            return@Button
+                        }
+                        val usersCollection = db.collection("users")
+                        val userRef = usersCollection.whereEqualTo("userId", userId)
+                        val updatedUser = BasicUserInfo(
+                            userId = userId,
+                            firstName = firstname,
+                            lastName = lastname,
+                            age = age,
+                            ethnicity = selectedEthnicity,
+                            gender = selectedGender,
+                            program = selectedProgram,
+                            hobby = hobby,
+                            oneWord = oneWord,
+                            oneEmoji = selectedOneEmoji,
+                            programEmoji = selectedProgramEmoji,
+                            hobbyEmoji = selectedHobbyEmoji,
+                            prompt = selectedPrompt,
+                            promptAnswer = promptAnswer,
+                            profilePictureUri = imageUri?.toString() ?: "",
+                            pictureUri1 = imageUri1?.toString() ?: "",
+                            pictureUri2 = imageUri2?.toString() ?: "",
+                            pictureUri3 = imageUri3?.toString() ?: ""
+                        )
+                        userRef.get()
+                            .addOnSuccessListener { querySnapshot ->
+                                // Assuming only one document should match the query
+                                val document = querySnapshot.documents.firstOrNull()
+                                if (document != null) {
+                                    val docId = document.id // Get the document ID
+                                    usersCollection.document(docId)
+                                        .set(updatedUser) // Update the document with updatedUser data
+                                        .addOnSuccessListener {
+                                            Log.d("Profile", "DocumentSnapshot successfully updated!")
+                                            // Handle success
+                                        }
+                                        .addOnFailureListener { e ->
+                                            Log.w("Profile", "Error updating document", e)
+                                            // Handle failure
+                                        }
+                                } else {
+                                    Log.d("Profile", "No matching document found for the userId")
+                                }
                             }
-                        }
-                        .addOnFailureListener { exception ->
-                            Log.w("Profile", "Error getting documents: ", exception)
-                        }
+                            .addOnFailureListener { exception ->
+                                Log.w("Profile", "Error getting documents: ", exception)
+                            }
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 24.dp)
-            ) {
+            )
+            {
                 Text("Save")
             }
         }
     }
 }
+
+
 
 
 
