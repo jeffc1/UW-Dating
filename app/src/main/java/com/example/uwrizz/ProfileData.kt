@@ -22,7 +22,8 @@ data class BasicUserInfo(
     val profilePictureUri: String = "", // For the main profile picture
     val pictureUri1: String = "", // For the first additional picture
     val pictureUri2: String = "", // For the second additional picture
-    val pictureUri3: String = "" // For the third additional picture
+    val pictureUri3: String = "", // For the third additional picture
+    val likes: List<String>? = null
 )
 
 

@@ -226,7 +226,7 @@ fun MainScreen(client: HttpClient) {
                             }
                         }
 
-                        Screen.Likes -> LikesScreen(exampleProfiles)
+//                        Screen.Likes -> LikesScreen(exampleProfiles)
                         Screen.Profile -> ProfileSettingsScreen(
                             profileImage = ImageVector.vectorResource(R.drawable.ic_head), // Replace with your actual default image resource
                             onImageClick = {
@@ -318,23 +318,23 @@ fun BottomNavigationBar(
             selected = currentScreen == Screen.Chat,
             onClick = { onNavigationItemSelected(Screen.Chat) }
         )
-        BottomNavigationItem(
-            icon = {
-                Icon(
-                    ImageVector.vectorResource(id = R.drawable.ic_add),
-                    contentDescription = "Likes",
-                    tint = if (currentScreen == Screen.Likes) selectedColor else lightGrey
-                )
-            },
-            label = {
-                Text(
-                    "Likes",
-                    color = if (currentScreen == Screen.Likes) selectedColor else lightGrey
-                )
-            },
-            selected = currentScreen == Screen.Likes,
-            onClick = { onNavigationItemSelected(Screen.Likes) }
-        )
+//        BottomNavigationItem(
+//            icon = {
+//                Icon(
+//                    ImageVector.vectorResource(id = R.drawable.ic_add),
+//                    contentDescription = "Likes",
+//                    tint = if (currentScreen == Screen.Likes) selectedColor else lightGrey
+//                )
+//            },
+//            label = {
+//                Text(
+//                    "Likes",
+//                    color = if (currentScreen == Screen.Likes) selectedColor else lightGrey
+//                )
+//            },
+//            selected = currentScreen == Screen.Likes,
+//            onClick = { onNavigationItemSelected(Screen.Likes) }
+//        )
         BottomNavigationItem(
             icon = {
                 Icon(
@@ -363,7 +363,7 @@ fun Icon(chat: Screen, contentDescription: String) {
 }
 
 enum class Screen {
-    Home, Chat, Likes, Profile, Preferences, Survey, Login, CreateAccount
-}
+    Home, Chat, Profile, Preferences, Survey, Login, CreateAccount
+}//removed Likes for now
 
 

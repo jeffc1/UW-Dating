@@ -32,6 +32,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material.icons.filled.AccountCircle
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -261,6 +262,11 @@ fun ProfileSettingsScreen(
 
         val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let {
+                val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    takeFlags)
+                onImageSelected(uri)
                 when (currentImageSelection) {
                     1 -> {
                         imageUri1 = it; saveImageUri(it, "image_uri_1")
@@ -359,17 +365,17 @@ fun ProfileSettingsScreen(
                         // Upload the selected image to Firebase Storage
                         val storageRef = storage.reference
                         val profilePicRef = storageRef.child("profile_pictures/${auth.currentUser?.uid.toString()}.jpg") // Assuming you want to store the image with the user's UID as the filename
-                        val uploadTask = profilePicRef.putFile(uri)
-
-                        // Register observers to listen for when the download is done or if it fails
-                        uploadTask.addOnSuccessListener {
-                            Log.d("Profile", "Profile picture upload successful")
-                            // Handle success, e.g., update UI, display success message, etc.
-                        }.addOnFailureListener { exception ->
-                            Log.e("Profile", "Profile picture upload failed: $exception")
-                            // Handle failures, e.g., display an error message to the user
+                        // Before uploading, ensure that you have the persistable permissions for this URI.
+                        try {
+                            val uploadTask = profilePicRef.putFile(uri)
+                            uploadTask.addOnSuccessListener {
+                                // Handle success
+                            }.addOnFailureListener { exception ->
+                                // Handle failure
+                            }
+                        } catch (e: SecurityException) {
+                            // Handle the exception, likely by requesting the user to re-select the image.
                         }
-
                         // Display the selected image
                         Image(
                             painter = rememberImagePainter(data = uri),
