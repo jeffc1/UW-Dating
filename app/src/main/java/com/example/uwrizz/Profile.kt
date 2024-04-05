@@ -174,6 +174,7 @@ fun ProfileSettingsScreen(
         var selectedEthnicity by rememberSaveable { mutableStateOf("Please select your ethnicity") }
         var ethnicityError by remember { mutableStateOf(false) }
         var showError by remember { mutableStateOf(false) }
+        var showSuccess by remember { mutableStateOf(false) }
 
 
         val sharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
@@ -801,13 +802,40 @@ fun ProfileSettingsScreen(
                         Button(
                             onClick = {
                                 showError = false // Dismiss dialog when the user clicks the confirm button
-                            }
+                            },
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E))
                         ) {
                             Text("OK")
                         }
                     }
                 )
             }
+            if (showSuccess) {
+                AlertDialog(
+                    onDismissRequest = {
+                        // Reset the flag when the dialog is dismissed
+                        showSuccess = false
+                    },
+                    title = {
+                        Text(text = "Success")
+                    },
+                    text = {
+                        Text("Profile saved successfully!")
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                // Reset the flag when the user acknowledges the success
+                                showSuccess = false
+                            },
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E))
+                        ) {
+                            Text("OK")
+                        }
+                    }
+                )
+            }
+
             // Save button
             Button(
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E)),
@@ -874,6 +902,7 @@ fun ProfileSettingsScreen(
                             .addOnFailureListener { exception ->
                                 Log.w("Profile", "Error getting documents: ", exception)
                             }
+                        showSuccess = true
                     }
                 },
                 modifier = Modifier
