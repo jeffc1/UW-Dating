@@ -174,6 +174,7 @@ fun ProfileSettingsScreen(
         var selectedEthnicity by rememberSaveable { mutableStateOf("Please select your ethnicity") }
         var ethnicityError by remember { mutableStateOf(false) }
         var showError by remember { mutableStateOf(false) }
+        var picError by remember { mutableStateOf(false) }
         var showSuccess by remember { mutableStateOf(false) }
 
 
@@ -276,7 +277,9 @@ fun ProfileSettingsScreen(
                     modifier = Modifier
                         .size(118.dp)
                         .clip(CircleShape)
-                        .border(2.dp, Color.Gray, CircleShape)
+                        .border(2.dp,
+                            if (imageUri == null) Color.Red else Color.Gray,
+                            CircleShape)
                         .clickable {
                             currentImageSelection = 0 // Assign a value indicating profile picture selection
                             galleryLauncher.launch("image/*") // Launch the gallery
@@ -313,6 +316,13 @@ fun ProfileSettingsScreen(
                         modifier = Modifier
                             .size(120.dp)
                             .clip(CircleShape)
+                    )
+                }
+                if (imageUri == null) {
+                    Text(
+                        "*",
+                        color = Color.Red,
+                        modifier = Modifier.padding(top = 8.dp)
                     )
                 }
 
@@ -787,6 +797,7 @@ fun ProfileSettingsScreen(
                     .padding(top = 16.dp),
                 colors = red
             )
+
             if (showError) {
                 AlertDialog(
                     onDismissRequest = {
@@ -809,8 +820,29 @@ fun ProfileSettingsScreen(
                         }
                     }
                 )
-            }
-            if (showSuccess) {
+            } else if (picError) {
+            AlertDialog(
+                onDismissRequest = {
+                    picError = false // Dismiss the dialog when the user clicks outside it or on the dismiss button
+                },
+                title = {
+                    Text(text = "Missing Information")
+                },
+                text = {
+                    Text("Please Insert A Profile Picture.")
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            picError = false // Dismiss dialog when the user clicks the confirm button
+                        },
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E))
+                    ) {
+                        Text("OK")
+                    }
+                }
+            )
+        } else if (showSuccess) {
                 AlertDialog(
                     onDismissRequest = {
                         // Reset the flag when the dialog is dismissed
@@ -850,6 +882,8 @@ fun ProfileSettingsScreen(
                     if ( firstnameError || ethnicityError|| GenderError ||
                         ProgramError || pEmojiError || hEmojiError || oEmojiError) {
                         showError = true // Show the dialog when validation fails
+                    } else if (imageUri == null) {
+                        picError = true
                     } else {
                         val userId = auth.currentUser?.uid
                         if (userId == null) {
