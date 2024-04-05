@@ -21,19 +21,86 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.example.uwrizz.BasicUserInfo
-import com.example.uwrizz.MultiSelect
 import com.example.uwrizz.R
 import com.example.uwrizz.UserPreference
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.graphics.Color
 
+@Composable
+fun MultiSelect(
+    options: List<String>,
+    selectedOptions: List<String>,
+    onOptionSelected: (String, Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    label: String
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val red = TextFieldDefaults.outlinedTextFieldColors(
+        focusedBorderColor = Color(0xFFE1474E),
+        unfocusedBorderColor = Color(0xFFE1474E)
+    )
+
+    Column(modifier = modifier) {
+        androidx.compose.material.OutlinedTextField(
+            value = selectedOptions.joinToString(", "),
+            onValueChange = { },
+            trailingIcon = {
+                Icon(
+                    Icons.Default.ArrowDropDown,
+                    contentDescription = if (expanded) "Close dropdown" else "Open dropdown",
+                    Modifier.clickable { expanded = !expanded }
+                )
+            },
+            label = { Text(label) },
+            readOnly = true,
+            modifier = Modifier.fillMaxWidth(),
+            colors = red
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .selectable(
+                            selected = selectedOptions.contains(option),
+                            onClick = {
+                                onOptionSelected(
+                                    option,
+                                    !selectedOptions.contains(option)
+                                )
+                            }
+                        )
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = selectedOptions.contains(option),
+                        onCheckedChange = { checked ->
+                            onOptionSelected(option, checked)
+                        }
+                    )
+                    Text(
+                        text = option,
+                        style = MaterialTheme.typography.body1.merge(),
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+            }
+        }
+    }
+}
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PreferencesScreen(
@@ -101,7 +168,8 @@ fun PreferencesScreen(
         Spacer(Modifier.weight(1f)) // This is used for layout purposes
         Button(
             onClick = onNavigateToProfile,
-            modifier = Modifier
+            modifier = Modifier,
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E))
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) { // Align icon and text vertically
                 Icon(
@@ -207,6 +275,7 @@ fun PreferencesScreen(
 
         // Save button
         Button(
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E)),
             onClick = {
                 val userId = auth.currentUser?.uid
                 if (userId == null) {

@@ -10,13 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.Composable
@@ -37,6 +30,8 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.*
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.vectorResource
 import com.example.uwrizz.R
 
@@ -89,6 +84,10 @@ fun QuestionAnswerItem(
     options: List<String>
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val red = TextFieldDefaults.outlinedTextFieldColors(
+        focusedBorderColor = Color(0xFFE1474E),
+        unfocusedBorderColor = Color(0xFFE1474E)
+    )
 
     Box(
         modifier = Modifier
@@ -116,7 +115,8 @@ fun QuestionAnswerItem(
                         Modifier.clickable { expanded = true }
                     )
                 },
-                readOnly = true // Make TextField readonly
+                readOnly = true,
+                colors = red// Make TextField readonly
             )
             DropdownMenu(
                 expanded = expanded,
@@ -156,6 +156,10 @@ fun SurveyScreen(
         "I enjoy open communication and honesty in a relationship.",
         "I enjoy valuing ambition and striving to achieve my goals.",
         "I enjoy spontaneity and embracing new experiences without hesitation."
+    )
+    val red = TextFieldDefaults.outlinedTextFieldColors(
+        focusedBorderColor = Color(0xFFE1474E),
+        unfocusedBorderColor = Color(0xFFE1474E)
     )
 
     // Mutable state for storing answers
@@ -217,7 +221,8 @@ fun SurveyScreen(
         Spacer(Modifier.weight(1f)) // This is used for layout purposes
         Button(
             onClick = onNavigateToProfile,
-            modifier = Modifier
+            modifier = Modifier,
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E))
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) { // Align icon and text vertically
                 Icon(
@@ -245,6 +250,7 @@ fun SurveyScreen(
 
         // Save button
         Button(
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E)),
             onClick = {
                 // Save survey responses to Firestore
                 saveSurveyResponses(questions.mapIndexed { index, question ->

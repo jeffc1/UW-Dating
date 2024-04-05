@@ -50,6 +50,11 @@ fun ProfileSettingsScreen(
     context: Context
 ) {
     UWRizzTheme {
+        val red = TextFieldDefaults.outlinedTextFieldColors(
+            focusedBorderColor = Color(0xFFE1474E),
+            unfocusedBorderColor = Color(0xFFE1474E)
+        )
+
         val db = Firebase.firestore
         val auth = FirebaseAuth.getInstance()
 
@@ -305,7 +310,8 @@ fun ProfileSettingsScreen(
                     // Edit Preferences button
                     Button(
                         onClick = onNavigateToPreferences,
-                        modifier = Modifier
+                        modifier = Modifier,
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E))
                     ) {
                         Text("Edit Preferences")
                     }
@@ -314,7 +320,8 @@ fun ProfileSettingsScreen(
 
                     Button(
                         onClick = onNavigateToSurvey,
-                        modifier = Modifier
+                        modifier = Modifier,
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E))
                     ) {
                         Text("Edit Survey")
                     }
@@ -354,7 +361,8 @@ fun ProfileSettingsScreen(
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp)
+                    .padding(top = 16.dp),
+                colors = red
             )
             OutlinedTextField(
                 value = lastname,
@@ -363,7 +371,8 @@ fun ProfileSettingsScreen(
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp)
+                    .padding(top = 16.dp),
+                colors = red
             )
             //age
             val label = "Select Age"
@@ -382,7 +391,8 @@ fun ProfileSettingsScreen(
                     modifier = Modifier
                         .clickable { showSlider = !showSlider }
                         .fillMaxWidth()
-                        .padding(top = 16.dp)
+                        .padding(top = 16.dp),
+                    colors = red
                 )
                 // Show the Slider when the OutlinedTextField is clicked
                 if (showSlider) {
@@ -425,7 +435,9 @@ fun ProfileSettingsScreen(
                             Modifier.clickable { expandedEthnicity = true }
                         )
                     },
-                    readOnly = true // Make TextField readonly
+                    readOnly = true,
+                    colors = red
+                    // Make TextField readonly
                 )
                 DropdownMenu(
                     expanded = expandedEthnicity,
@@ -464,7 +476,8 @@ fun ProfileSettingsScreen(
                             Modifier.clickable { expandedGender = true }
                         )
                     },
-                    readOnly = true // Make TextField readonly
+                    readOnly = true,
+                    colors = red// Make TextField readonly
                 )
                 DropdownMenu(
                     expanded = expandedGender,
@@ -503,7 +516,8 @@ fun ProfileSettingsScreen(
                             Modifier.clickable { expandedProgram = true }
                         )
                     },
-                    readOnly = true // Make TextField readonly
+                    readOnly = true,
+                    colors = red// Make TextField readonly
                 )
                 DropdownMenu(
                     expanded = expandedProgram,
@@ -541,7 +555,8 @@ fun ProfileSettingsScreen(
                             Modifier.clickable { expandedProgramEmoji = true }
                         )
                     },
-                    readOnly = true // Make TextField readonly
+                    readOnly = true,
+                    colors = red// Make TextField readonly
                 )
                 DropdownMenu(
                     expanded = expandedProgramEmoji,
@@ -565,7 +580,8 @@ fun ProfileSettingsScreen(
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp)
+                    .padding(top = 16.dp),
+                colors = red
             )
             Box(
                 modifier = Modifier
@@ -588,7 +604,9 @@ fun ProfileSettingsScreen(
                             Modifier.clickable { expandedHobbyEmoji = true }
                         )
                     },
-                    readOnly = true // Make TextField readonly
+                    readOnly = true,
+                    colors = red
+                    // Make TextField readonly
                 )
                 DropdownMenu(
                     expanded = expandedHobbyEmoji,
@@ -611,7 +629,8 @@ fun ProfileSettingsScreen(
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp)
+                    .padding(top = 16.dp),
+                colors = red
             )
             Box(
                 modifier = Modifier
@@ -634,7 +653,8 @@ fun ProfileSettingsScreen(
                             Modifier.clickable { expandedOneEmoji = true }
                         )
                     },
-                    readOnly = true // Make TextField readonly
+                    readOnly = true,
+                    colors = red// Make TextField readonly
                 )
                 DropdownMenu(
                     expanded = expandedOneEmoji,
@@ -671,7 +691,8 @@ fun ProfileSettingsScreen(
                             Modifier.clickable { expandedPrompt = true }
                         )
                     },
-                    readOnly = true // Make TextField readonly
+                    readOnly = true,
+                    colors = red// Make TextField readonly
                 )
                 DropdownMenu(
                     expanded = expandedPrompt,
@@ -694,10 +715,12 @@ fun ProfileSettingsScreen(
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp)
+                    .padding(top = 16.dp),
+                colors = red
             )
             // Save button
             Button(
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E)),
                 onClick = {
                     val userId = auth.currentUser?.uid
                     if (userId == null) {
@@ -810,69 +833,6 @@ fun ImageUploadButton(
 }
 
 
-//Preference page
 
-//Function for multi selection
-@Composable
-fun MultiSelect(
-    options: List<String>,
-    selectedOptions: List<String>,
-    onOptionSelected: (String, Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-    label: String
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Column(modifier = modifier) {
-        OutlinedTextField(
-            value = selectedOptions.joinToString(", "),
-            onValueChange = { },
-            trailingIcon = {
-                Icon(
-                    Icons.Default.ArrowDropDown,
-                    contentDescription = if (expanded) "Close dropdown" else "Open dropdown",
-                    Modifier.clickable { expanded = !expanded }
-                )
-            },
-            label = { Text(label) },
-            readOnly = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            options.forEach { option ->
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .selectable(
-                            selected = selectedOptions.contains(option),
-                            onClick = {
-                                onOptionSelected(
-                                    option,
-                                    !selectedOptions.contains(option)
-                                )
-                            }
-                        )
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = selectedOptions.contains(option),
-                        onCheckedChange = { checked ->
-                            onOptionSelected(option, checked)
-                        }
-                    )
-                    Text(
-                        text = option,
-                        style = MaterialTheme.typography.body1.merge(),
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
-            }
-        }
-    }
-}
 
 
