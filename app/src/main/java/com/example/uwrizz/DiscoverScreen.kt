@@ -27,6 +27,11 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import com.google.android.gms.tasks.Tasks
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainContent() {
@@ -59,9 +64,36 @@ fun MainContent() {
         currentProfileIndex++
     }
 
+    @Composable
+    fun NoMoreProfilesScreen() {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Replace `R.drawable.no_more_profiles_image` with your actual image resource
+            Text(
+                text = "🥲", // Replace this with any emoji you like
+                fontSize = 64.sp, // Adjust size as needed
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "Oops... No more Profiles",
+                style = TextStyle(
+                    fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                ),
+                color = Color.Black
+            )
+        }
+    }
+
+
     // Check if we've reached the end of profiles
     if (currentProfileIndex >= profiles.size) {
-        Text("No more profiles")
+        NoMoreProfilesScreen()
         return
     }
 
@@ -165,35 +197,139 @@ fun ScrollableCard(
 }
 
 fun fetchProfiles(currentUserId: String, onResult: (List<User>) -> Unit) {
-    Firebase.firestore.collection("users")
-        .whereNotEqualTo("userId", currentUserId)
+    val db = Firebase.firestore
+
+    // Step 1: Fetch current user's preferences based on their userId
+    db.collection("preferences")
+        .whereEqualTo("userId", currentUserId)
+        .limit(1) // Assuming there is only one preferences document per user
         .get()
-        .addOnSuccessListener { result ->
-            val users = result.documents.mapNotNull { it.toObject(User::class.java) }
-            onResult(users)
+        .addOnSuccessListener { preferencesSnapshot ->
+            // Check if preferences exist for the current user
+            if (!preferencesSnapshot.isEmpty) {
+                val currentUserPreferences = preferencesSnapshot.documents.first().toObject(UserPreference::class.java)
+
+                // Step 2: Fetch all potential matches that are not the current user
+                db.collection("users")
+                    .whereNotEqualTo("userId", currentUserId)
+                    .get()
+                    .addOnSuccessListener { usersResult ->
+                        // Step 3: Filter potential matches based on current user's preferences for gender and program
+                        val filteredMatches = usersResult.documents.mapNotNull { it.toObject(User::class.java) }
+                            .filter { potentialMatch ->
+                                // Check if potential match fits within the current user's gender preference
+                                val matchesGenderPreference =
+                                    currentUserPreferences?.interestedInGender?.contains(potentialMatch.gender) == true
+                                // Check if potential match fits within the current user's program preference
+                                val matchesProgramPreference =
+                                    currentUserPreferences?.interestedInProgram?.contains(potentialMatch.program) == true
+
+                                val isWithinAgePreference =
+                                    potentialMatch.age >= currentUserPreferences?.agePreferenceMin!! && potentialMatch.age <= currentUserPreferences.agePreferenceMax
+
+                                matchesGenderPreference && matchesProgramPreference && isWithinAgePreference
+                            }
+                        val currentUserSurveyTask = db.collection("survey").whereEqualTo("userId", currentUserId).get()
+
+                        Tasks.whenAll(currentUserSurveyTask).addOnSuccessListener {
+                            val currentUserSurveyAnswers = currentUserSurveyTask.result.documents.firstOrNull()?.toObject(SurveyAnswers::class.java)?.answers ?: listOf()
+                        // Filter and score potential matches
+                        val matchTasks = filteredMatches.map { filteredMatch ->
+                            // Fetch each potential match's survey answers
+                            db.collection("survey").whereEqualTo("userId", filteredMatch.userId).get()
+                                .continueWith { task ->
+                                    val matchSurveyAnswers = task.result.documents.firstOrNull()
+                                        ?.toObject(SurveyAnswers::class.java)?.answers ?: listOf()
+                                    val compatibilityScore =
+                                        calculateCompatibilityScore(currentUserSurveyAnswers, matchSurveyAnswers)
+                                    filteredMatch to compatibilityScore
+                                }
+                        }
+                            // Wait for all match tasks to complete
+                            Tasks.whenAllSuccess<Pair<User, Int>>(matchTasks).addOnSuccessListener { scoredMatches ->
+                                // Sort by compatibility score and return the result
+                                val sortedMatches = scoredMatches.sortedBy { it.second }.map { it.first }
+                                onResult(sortedMatches)
+                            }
+                            .addOnFailureListener { exception ->
+                                Log.e("fetchProfiles", "Error fetching potential matches: $exception")
+                            }
+
+                        // Invoke the callback function with the filtered list of users
+//                        onResult(filteredMatches)
+                    }
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.e("DiscoverScreen", "Error fetching potential matches: $exception")
+                    }
+            } else {
+                db.collection("users")
+                    .whereNotEqualTo("userId", currentUserId)
+                    .get()
+                    .addOnSuccessListener { result ->
+                        val users = result.documents.mapNotNull { it.toObject(User::class.java) }
+                        onResult(users)
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.d("DiscoverScreen", "Error getting users: ", exception)
+                    }
+
+            }
         }
         .addOnFailureListener { exception ->
-            Log.d("DiscoverScreen", "Error getting users: ", exception)
+            db.collection("users")
+                .whereNotEqualTo("userId", currentUserId)
+                .get()
+                .addOnSuccessListener { result ->
+                    val users = result.documents.mapNotNull { it.toObject(User::class.java) }
+                    onResult(users)
+                }
+                .addOnFailureListener { exception ->
+                    Log.d("DiscoverScreen", "Error getting users: ", exception)
+                }
         }
+}
+
+fun calculateCompatibilityScore(currentUserAnswers: List<Int>, matchAnswers: List<Int>): Int {
+    // Your logic for calculating the score goes here.
+    // This is a simple example where we sum the absolute differences between answers.
+    return currentUserAnswers.zip(matchAnswers) { a, b -> Math.abs(a - b) }.sum()
 }
 
 fun likeProfileInFirestore(currentUserId: String, likedUserId: String) {
     val db = Firebase.firestore
-    val currentUserDocRef = db.collection("users").document(currentUserId)
 
-    // Using a transaction to safely add a liked user
-    db.runTransaction { transaction ->
-        val snapshot = transaction.get(currentUserDocRef)
-        val currentLikes = snapshot.get("likes") as? List<String> ?: listOf()
-        if (likedUserId !in currentLikes) {
-            transaction.update(currentUserDocRef, "likes", currentLikes + likedUserId)
+    // First, get the document ID for the current user
+    db.collection("users")
+        .whereEqualTo("userId", currentUserId)
+        .get()
+        .addOnSuccessListener { documents ->
+            if (documents.isEmpty) {
+                Log.w("DiscoverScreen", "No user found with userId: $currentUserId")
+                return@addOnSuccessListener
+            }
+            // Assuming only one document will be returned for each unique userId
+            val currentUserDocId = documents.documents.first().id
+            val currentUserDocRef = db.collection("users").document(currentUserDocId)
+
+            // Proceed with the transaction to update likes
+            db.runTransaction { transaction ->
+                val snapshot = transaction.get(currentUserDocRef)
+                val currentLikes = snapshot.get("likes") as? List<String> ?: listOf()
+                if (likedUserId !in currentLikes) {
+                    transaction.update(currentUserDocRef, "likes", currentLikes + likedUserId)
+                }
+            }.addOnSuccessListener {
+                Log.d("DiscoverScreen", "Profile successfully liked: $likedUserId")
+            }.addOnFailureListener { e ->
+                Log.w("DiscoverScreen", "Error liking profile: $likedUserId", e)
+            }
         }
-    }.addOnSuccessListener {
-        Log.d("DiscoverScreen", "Profile successfully liked: $likedUserId")
-    }.addOnFailureListener { e ->
-        Log.w("DiscoverScreen", "Error liking profile: $likedUserId", e)
-    }
+        .addOnFailureListener { e ->
+            Log.w("DiscoverScreen", "Error finding user document: $currentUserId", e)
+        }
 }
+
 
 
 @Composable

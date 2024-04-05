@@ -8,7 +8,7 @@ data class BasicUserInfo(
     val userId: String = "",
     val firstName: String = "",
     val lastName: String = "",
-    val age: Float = 0f,
+    val age: Int = 0,
     val ethnicity: String = "",
     val gender: String = "",
     val program: String = "",

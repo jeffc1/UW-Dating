@@ -63,7 +63,7 @@ fun ProfileSettingsScreen(
         var firstname by rememberSaveable { mutableStateOf("") }
         var lastname by rememberSaveable { mutableStateOf("") }
         var hobby by rememberSaveable { mutableStateOf("") }
-        var age by rememberSaveable { mutableStateOf(18f) }
+        var age by rememberSaveable { mutableStateOf(18) }
         var showAgeSlider by rememberSaveable { mutableStateOf(false) }
         var oneWord by rememberSaveable { mutableStateOf("") }
         var promptAnswer by rememberSaveable { mutableStateOf("") }
@@ -207,7 +207,7 @@ fun ProfileSettingsScreen(
                                 // Update mutable state variables with user data
                                 firstname = user.firstName
                                 lastname = user.lastName
-                                age = user.age
+                                age = user.age as Int
                                 selectedEthnicity = user.ethnicity
                                 selectedGender = user.gender
                                 selectedProgram = user.program
@@ -387,8 +387,8 @@ fun ProfileSettingsScreen(
                 // Show the Slider when the OutlinedTextField is clicked
                 if (showSlider) {
                     Slider(
-                        value = age,
-                        onValueChange = { age = it },
+                        value = age.toFloat(),
+                        onValueChange = { age = it.toInt() },
                         valueRange = ageRange,
                         steps = (ageRange.endInclusive.toInt() - ageRange.start.toInt()) - 1,
                         onValueChangeFinished = {

@@ -44,8 +44,8 @@ fun PreferencesScreen(
 
     val scrollState = rememberScrollState()
 
-    var age by rememberSaveable { mutableStateOf(18f) } // Default initial age
-    var age2 by rememberSaveable { mutableStateOf(30f) }
+    var age by rememberSaveable { mutableStateOf(18) } // Default initial age
+    var age2 by rememberSaveable { mutableStateOf(30) }
     var showAgeSlider by rememberSaveable { mutableStateOf(false) }
 
     val genderOptions2 = listOf("Male", "Female", "Other") // Define your options here
@@ -71,8 +71,8 @@ fun PreferencesScreen(
                             querySnapshot.documents[0].toObject(UserPreference::class.java)
                         if (preference != null) {
                             // Update mutable state variables with user data
-                            age = preference.agePreferenceMin.toFloat()
-                            age2 = preference.agePreferenceMax.toFloat()
+                            age = preference.agePreferenceMin.toInt()
+                            age2 = preference.agePreferenceMax.toInt()
                             selectGenders2 = preference.interestedInGender
                             selectedPrograms2 = preference.interestedInProgram
                             selectedEthnicity2 = preference.interestedInEthnicity
@@ -180,20 +180,20 @@ fun PreferencesScreen(
             )
             if (showSlider) {
                 RangeSlider(
-                    value = age..age2,
+                    value = age.toFloat()..age2.toFloat(),
                     onValueChange = { newRange ->
                         if (newRange.start == newRange.endInclusive) {
                             // If both sliders are at the same position, increment age2 by 1
-                            age = newRange.start
-                            age2 = newRange.endInclusive + 1
+                            age = newRange.start.toInt()
+                            age2 = (newRange.endInclusive + 1).toInt()
                         } else if (newRange.start < newRange.endInclusive) {
                             // If the range is valid, update age and age2 accordingly
-                            age = newRange.start
-                            age2 = newRange.endInclusive
+                            age = newRange.start.toInt()
+                            age2 = newRange.endInclusive.toInt()
                         } else {
                             // If the start value is greater than the end value, swap them
-                            age = newRange.endInclusive
-                            age2 = newRange.start
+                            age = newRange.endInclusive.toInt()
+                            age2 = newRange.start.toInt()
                         }
                     },
                     steps = 30 - 18 - 1,
