@@ -159,7 +159,7 @@ fun addProfile(auth: FirebaseAuth, db: FirebaseFirestore, firstname: String) {
         userId = auth.currentUser?.uid as String,
         firstName = firstname,
         lastName = "",
-        age = 18f,
+        age = 18,
         ethnicity = "",
         gender = "",
         program = "",
