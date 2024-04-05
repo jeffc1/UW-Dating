@@ -21,19 +21,97 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.example.uwrizz.BasicUserInfo
-import com.example.uwrizz.MultiSelect
 import com.example.uwrizz.R
 import com.example.uwrizz.UserPreference
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.graphics.Color
 
+@Composable
+fun MultiSelect(
+    options: List<String>,
+    selectedOptions: List<String>,
+    onOptionSelected: (String, Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    label: String,
+    isError: Boolean = false, // Add this parameter
+    errorMessage: String = "" // And this
+
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val red = TextFieldDefaults.outlinedTextFieldColors(
+        focusedBorderColor = Color(0xFFE1474E),
+        unfocusedBorderColor = Color(0xFFE1474E)
+    )
+
+    Column(modifier = modifier) {
+        androidx.compose.material.OutlinedTextField(
+            value = selectedOptions.joinToString(", "),
+            onValueChange = { },
+            trailingIcon = {
+                Icon(
+                    Icons.Default.ArrowDropDown,
+                    contentDescription = if (expanded) "Close dropdown" else "Open dropdown",
+                    Modifier.clickable { expanded = !expanded }
+                )
+            },
+            label = { Text(label) },
+            readOnly = true,
+            modifier = Modifier.fillMaxWidth(),
+            colors = red
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .selectable(
+                            selected = selectedOptions.contains(option),
+                            onClick = {
+                                onOptionSelected(
+                                    option,
+                                    !selectedOptions.contains(option)
+                                )
+                            }
+                        )
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = selectedOptions.contains(option),
+                        onCheckedChange = { checked ->
+                            onOptionSelected(option, checked)
+                        }
+                    )
+                    Text(
+                        text = option,
+                        style = MaterialTheme.typography.body1.merge(),
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+            }
+        }
+        if (isError) {
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colors.error,
+                style = MaterialTheme.typography.caption,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
+        }
+    }
+}
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PreferencesScreen(
@@ -50,13 +128,18 @@ fun PreferencesScreen(
 
     val genderOptions2 = listOf("Male", "Female", "Other") // Define your options here
     var selectGenders2 by rememberSaveable { mutableStateOf(listOf<String>()) }
-
+    var genderError2 by remember { mutableStateOf(false) }
     val programOptions2 = listOf("Arts", "Engineering", "Environment", "Health", "Mathematics", "Science") // Define your options here
     var selectedPrograms2 by rememberSaveable { mutableStateOf(listOf<String>()) }
-
+    var programError2 by remember { mutableStateOf(false) }
     val ethnicityOptions2 = listOf("Black/African Descent", "East Asian", "Hispanic/Latino",
         "Middle Eastern", "Native", "Pacific Islander", "South Asian", "South East Asian", "White/Caucasian", "Other") // Define your options here
     var selectedEthnicity2 by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var ethnicityError2 by remember { mutableStateOf(false) }
+
+    var showError2 by remember { mutableStateOf(false) }
+    var showSuccess2 by remember { mutableStateOf(false) }
+
 
     remember {
         val userId = auth.currentUser?.uid
@@ -101,7 +184,8 @@ fun PreferencesScreen(
         Spacer(Modifier.weight(1f)) // This is used for layout purposes
         Button(
             onClick = onNavigateToProfile,
-            modifier = Modifier
+            modifier = Modifier,
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E))
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) { // Align icon and text vertically
                 Icon(
@@ -127,7 +211,7 @@ fun PreferencesScreen(
                     selectGenders2 - option
                 }
             },
-            label = "I'm Interested In (Gender)"
+            label = "I'm Interested In (Gender)*"
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -142,7 +226,7 @@ fun PreferencesScreen(
                     selectedEthnicity2 - option
                 }
             },
-            label = "I'm Interested In (Ethnicity)"
+            label = "I'm Interested In (Ethnicity)*"
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -157,7 +241,7 @@ fun PreferencesScreen(
                     selectedPrograms2 - option
                 }
             },
-            label = "I'm Interested In (Program)"
+            label = "I'm Interested In (Program)*"
         )
         var showSlider by remember { mutableStateOf(false) } // State to control the visibility of the slider
 
@@ -165,7 +249,7 @@ fun PreferencesScreen(
             OutlinedTextField(
                 value = "Ages: ${age.toInt()} to ${age2.toInt()}",
                 onValueChange = {},
-                label = { Text("Select Age Range") },
+                label = { Text("Select Age Range*") },
                 readOnly = true, // Makes it non-editable
                 trailingIcon = {
                     Icon(
@@ -204,50 +288,109 @@ fun PreferencesScreen(
                 )
             }
         }
+        if (showError2) {
+            AlertDialog(
+                onDismissRequest = {
+                    showError2 = false // Dismiss the dialog when the user clicks outside it or on the dismiss button
+                },
+                title = {
+                    Text(text = "Missing Information")
+                },
+                text = {
+                    Text("Please fill in the required field(s)*.")
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showError2 = false // Dismiss dialog when the user clicks the confirm button
+                        },
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E))
+                    ) {
+                        Text("OK")
+                    }
+                }
+            )
+        }
+
+        if (showSuccess2) {
+            AlertDialog(
+                onDismissRequest = {
+                    // Reset the flag when the dialog is dismissed
+                    showSuccess2 = false
+                },
+                title = {
+                    Text(text = "Success")
+                },
+                text = {
+                    Text("Preferences saved successfully!")
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            // Reset the flag when the user acknowledges the success
+                            showSuccess2 = false
+                        },
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E))
+                    ) {
+                        Text("OK")
+                    }
+                }
+            )
+        }
 
         // Save button
         Button(
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E)),
             onClick = {
-                val userId = auth.currentUser?.uid
-                if (userId == null) {
-                    // Handle the case where the user is not authenticated or the UID is null
-                    Log.e("Preference", "User not authenticated or UID is null")
-                    return@Button
-                }
-                val prefCollection = db.collection("preferences")
-                val userRef = prefCollection.whereEqualTo("userId", userId)
-                val updatedUser = UserPreference(
-                    userId = auth.currentUser?.uid as String,
-                    interestedInGender = selectGenders2,
-                    interestedInEthnicity = selectedEthnicity2,
-                    interestedInProgram = selectedPrograms2,
-                    agePreferenceMin = age.toInt(),
-                    agePreferenceMax = age2.toInt()
+                genderError2 = selectGenders2.isEmpty()
+                ethnicityError2 = selectedEthnicity2.isEmpty()
+                programError2 = selectedPrograms2.isEmpty()
 
-                )
-                userRef.get()
-                    .addOnSuccessListener { querySnapshot ->
-                        // Assuming only one document should match the query
-                        val document = querySnapshot.documents.firstOrNull()
-                        if (document != null) {
-                            val docId = document.id // Get the document ID
-                            prefCollection.document(docId)
-                                .set(updatedUser) // Update the document with updatedUser data
-                                .addOnSuccessListener {
-                                    Log.d("Preference", "DocumentSnapshot successfully updated!")
-                                    // Handle success
-                                }
-                                .addOnFailureListener { e ->
-                                    Log.w("Preference", "Error updating document", e)
-                                    // Handle failure
-                                }
-                        } else {
-                            Log.d("Preference", "No matching document found for the userId")
+                if (genderError2 || ethnicityError2 || programError2) {
+                    showError2 = true // This shows a dialog, or you could use it to indicate error in other ways
+                } else {
+                    val userId = auth.currentUser?.uid
+                    if (userId == null) {
+                        // Handle the case where the user is not authenticated or the UID is null
+                        Log.e("Preference", "User not authenticated or UID is null")
+                        return@Button
+                    }
+                    val prefCollection = db.collection("preferences")
+                    val userRef = prefCollection.whereEqualTo("userId", userId)
+                    val updatedUser = UserPreference(
+                        userId = auth.currentUser?.uid as String,
+                        interestedInGender = selectGenders2,
+                        interestedInEthnicity = selectedEthnicity2,
+                        interestedInProgram = selectedPrograms2,
+                        agePreferenceMin = age.toInt(),
+                        agePreferenceMax = age2.toInt()
+
+                    )
+                    userRef.get()
+                        .addOnSuccessListener { querySnapshot ->
+                            // Assuming only one document should match the query
+                            val document = querySnapshot.documents.firstOrNull()
+                            if (document != null) {
+                                val docId = document.id // Get the document ID
+                                prefCollection.document(docId)
+                                    .set(updatedUser) // Update the document with updatedUser data
+                                    .addOnSuccessListener {
+                                        Log.d("Preference", "DocumentSnapshot successfully updated!")
+                                        // Handle success
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Log.w("Preference", "Error updating document", e)
+                                        // Handle failure
+                                    }
+                            } else {
+                                Log.d("Preference", "No matching document found for the userId")
+                            }
                         }
-                    }
-                    .addOnFailureListener { exception ->
-                        Log.w("Preference", "Error getting documents: ", exception)
-                    }
+                        .addOnFailureListener { exception ->
+                            Log.w("Preference", "Error getting documents: ", exception)
+                        }
+                    showSuccess2 = true
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()

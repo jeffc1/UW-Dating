@@ -86,9 +86,20 @@ fun LoginScreen(
         ClickableText(
             text = AnnotatedString("Forgot password?"),
             onClick = {
-
+                if (email.isBlank()) {
+                    Toast.makeText(context, "Please enter your email address.", Toast.LENGTH_SHORT).show()
+                } else {
+                    auth.sendPasswordResetEmail(email)
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Reset link sent to your email.", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(context, "Failed to send reset link: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                }
             }
         )
+
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {

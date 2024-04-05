@@ -107,6 +107,9 @@ dependencies {
     implementation("androidx.compose.runtime:runtime:1.6.4")
     implementation("androidx.compose.runtime:runtime-livedata:1.6.4")
     implementation("androidx.compose.runtime:runtime-rxjava2:1.6.4")
+
+    implementation ("com.google.android.gms:play-services-tasks:18.1.0")
+
 }
 
 buildscript {
