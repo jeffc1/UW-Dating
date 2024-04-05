@@ -33,11 +33,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material.icons.filled.AccountCircle
 import android.content.Context
 import android.content.SharedPreferences
-
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
-
+import com.google.firebase.storage.ktx.storage
+import com.google.firebase.storage.storage
 
 
 @Composable
@@ -252,6 +252,8 @@ fun ProfileSettingsScreen(
                 verticalAlignment = Alignment.Top // Align items to the top
             ) {
                 // Profile picture
+                val storage = Firebase.storage
+
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
@@ -264,6 +266,21 @@ fun ProfileSettingsScreen(
                         }
                 ) {
                     imageUri?.let { uri ->
+                        // Upload the selected image to Firebase Storage
+                        val storageRef = storage.reference
+                        val profilePicRef = storageRef.child("profile_pictures/${auth.currentUser?.uid.toString()}.jpg") // Assuming you want to store the image with the user's UID as the filename
+                        val uploadTask = profilePicRef.putFile(uri)
+
+                        // Register observers to listen for when the download is done or if it fails
+                        uploadTask.addOnSuccessListener {
+                            Log.d("Profile", "Profile picture upload successful")
+                            // Handle success, e.g., update UI, display success message, etc.
+                        }.addOnFailureListener { exception ->
+                            Log.e("Profile", "Profile picture upload failed: $exception")
+                            // Handle failures, e.g., display an error message to the user
+                        }
+
+                        // Display the selected image
                         Image(
                             painter = rememberImagePainter(data = uri),
                             contentDescription = "Profile picture",

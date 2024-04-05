@@ -43,6 +43,7 @@ fun MainContent() {
     var oneEmoji by rememberSaveable { mutableStateOf("") }
     var prompt by rememberSaveable { mutableStateOf("") }
     var promptAnswer by rememberSaveable { mutableStateOf("") }
+    var compatabilityScore by rememberSaveable { mutableIntStateOf(-1)}
 
     remember {
         val userId = auth.currentUser?.uid
@@ -102,7 +103,9 @@ fun MainContent() {
                 .weight(12f)
                 .padding(16.dp)
         ) {
-            ScrollableCard(program, programEmoji, hobby, hobbyEmoji, oneWord, oneEmoji, prompt, promptAnswer)
+            val description = "${firstname} ${lastname} | ${age.toInt().toString()}"
+            ScrollableCard(program, programEmoji, hobby, hobbyEmoji,
+                oneWord, oneEmoji, prompt, promptAnswer, compatabilityScore, description)
         }
         XButton()
     }
@@ -124,7 +127,7 @@ fun XButton() {
 @Composable
 fun ScrollableCard(
     program: String, programEmoji: String, hobby: String, hobbyEmoji: String, oneWord: String, oneEmoji: String,
-    prompt: String, promptAnswer: String
+    prompt: String, promptAnswer: String, compatabilityScore: Int, description: String
 ) {
     LazyColumn(
         modifier = Modifier
@@ -146,8 +149,9 @@ fun ScrollableCard(
                 }
             }
             CustomCard(prompt, promptAnswer)
+            CustomCard("Compatability Score:", compatabilityScore.toString())
             val imageResourceId = painterResource(id = R.drawable.walterwhite) // Obtaining resource ID
-            PhotoCard(imageResourceId, 200.dp, name = "Walter")
+            PhotoCard(imageResourceId, 200.dp, name = description)
         }
     }
 }

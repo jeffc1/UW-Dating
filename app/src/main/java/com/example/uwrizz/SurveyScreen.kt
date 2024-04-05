@@ -52,13 +52,19 @@ fun saveSurveyResponses(responses: List<SurveyAnswer>) {
     val auth = FirebaseAuth.getInstance()
     val db = Firebase.firestore
     val userId = auth.currentUser?.uid as String
-    val surveyRef = db.collection("survey").document(userId)
+    val surveyCollection = db.collection("survey")
 
     val surveyAnswers = SurveyAnswers(userId, responses.map { it.answer })
-    surveyRef.get()
-        .addOnSuccessListener { document ->
-            if (document.exists()) {
-                surveyRef.update("answers", surveyAnswers.answers)
+
+
+    // Query the survey collection for documents where the "userId" field matches the current user's ID
+    surveyCollection.whereEqualTo("userId", userId)
+        .get()
+        .addOnSuccessListener { documents ->
+            if (!documents.isEmpty) {
+                // If documents are found with matching userId, update the first document found
+                val surveyDoc = documents.first()
+                surveyDoc.reference.update("answers", surveyAnswers.answers)
                     .addOnSuccessListener {
                         Log.d("Survey", "Survey responses updated successfully")
                     }
@@ -66,11 +72,12 @@ fun saveSurveyResponses(responses: List<SurveyAnswer>) {
                         Log.w("Survey", "Error updating survey responses", e)
                     }
             } else {
+                // Handle case where no document exists with matching userId
                 Log.d("Survey", "No survey document found for the user ID")
             }
         }
         .addOnFailureListener { e ->
-            Log.w("Survey", "Error fetching survey document", e)
+            Log.w("Survey", "Error fetching survey documents", e)
         }
 }
 
