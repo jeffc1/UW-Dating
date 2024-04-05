@@ -222,3 +222,4 @@ fun addSurvey(auth: FirebaseAuth, db: FirebaseFirestore) {
 private fun isValidEmail(email: String): Boolean {
     return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
 }
+    
