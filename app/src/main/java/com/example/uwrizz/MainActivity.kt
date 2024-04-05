@@ -201,11 +201,25 @@ fun MainScreen(client: HttpClient) {
                 else -> Unit
             }
         } else {
+            val onLogoutClicked: () -> Unit = {
+                // Sign out the user from Firebase Authentication
+                FirebaseAuth.getInstance().signOut()
+
+                // Perform any additional logout actions here, if needed
+
+                // Update the data store to reflect that the user is logged out
+                scope.launch {
+                    dataStore.edit { settings ->
+                        settings[booleanPreferencesKey("IS_LOGGED_IN")] = false
+                    }
+                }
+            }
             Scaffold(
                 bottomBar = {
                     BottomNavigationBar(
                         currentScreen,
-                        onNavigationItemSelected = { screen -> currentScreen = screen })
+                        onNavigationItemSelected = { screen -> currentScreen = screen },
+                                onLogoutClicked = onLogoutClicked)
                 }
             ) { innerPadding ->
                 Box(modifier = Modifier.padding(innerPadding)) {
@@ -276,7 +290,8 @@ fun MainScreen(client: HttpClient) {
 @Composable
 fun BottomNavigationBar(
     currentScreen: Screen,
-    onNavigationItemSelected: (Screen) -> Unit
+    onNavigationItemSelected: (Screen) -> Unit,
+    onLogoutClicked: () -> Unit
 ) {
     BottomNavigation(
         backgroundColor = Color(0xFF808080)
@@ -351,6 +366,23 @@ fun BottomNavigationBar(
             },
             selected = currentScreen == Screen.Profile,
             onClick = { onNavigationItemSelected(Screen.Profile) }
+        )
+        BottomNavigationItem(
+            icon = {
+                Icon(
+                    Icons.Filled.Logout,
+                    contentDescription = "Logout",
+                    tint = lightGrey // Adjust the color as needed
+                )
+            },
+            label = {
+                Text(
+                    "Logout",
+                    color = lightGrey // Adjust the color as needed
+                )
+            },
+            selected = false, // Since it's not selectable
+            onClick = { onLogoutClicked() }
         )
     }
 }
