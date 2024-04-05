@@ -39,7 +39,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.ktx.storage
 import androidx.compose.ui.text.style.TextDecoration
-import com.google.firebase.storage.FirebaseStorage
+
 import com.google.firebase.storage.storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,6 +48,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
+
+
 
 
 fun shouldShowProfileCompletionDialog(context: Context): Boolean {
@@ -361,17 +363,18 @@ fun ProfileSettingsScreen(
                 ) {
                     imageUri?.let { uri ->
                         // Upload the selected image to Firebase Storage
-                        val storageRef = FirebaseStorage.getInstance().reference
-                        val profilePicRef = storageRef.child("${auth.currentUser?.uid.toString()}.jpg") // Assuming you want to store the image with the user's UID as the filename
-                        val uploadTask = profilePicRef.putFile(uri)
-
-                        // Register observers to listen for when the download is done or if it fails
-                        uploadTask.addOnSuccessListener {
-                            Log.d("Profile", "Profile picture upload successful")
-                            // Handle success, e.g., update UI, display success message, etc.
-                        }.addOnFailureListener { exception ->
-                            Log.e("Profile", "Profile picture upload failed: $exception")
-                            // Handle failures, e.g., display an error message to the user
+                        val storageRef = storage.reference
+                        val profilePicRef = storageRef.child("profile_pictures/${auth.currentUser?.uid.toString()}.jpg") // Assuming you want to store the image with the user's UID as the filename
+                        // Before uploading, ensure that you have the persistable permissions for this URI.
+                        try {
+                            val uploadTask = profilePicRef.putFile(uri)
+                            uploadTask.addOnSuccessListener {
+                                // Handle success
+                            }.addOnFailureListener { exception ->
+                                // Handle failure
+                            }
+                        } catch (e: SecurityException) {
+                            // Handle the exception, likely by requesting the user to re-select the image.
                         }
                         // Display the selected image
                         Image(
@@ -389,6 +392,13 @@ fun ProfileSettingsScreen(
                         modifier = Modifier
                             .size(120.dp)
                             .clip(CircleShape)
+                    )
+                }
+                if (imageUri == null) {
+                    Text(
+                        "*",
+                        color = Color.Red,
+                        modifier = Modifier.padding(top = 8.dp)
                     )
                 }
 
@@ -420,11 +430,29 @@ fun ProfileSettingsScreen(
                 modifier = Modifier
                     .clickable { showDialog.value = true }
                     .padding(vertical = 8.dp),
-                color = Color.Black,
+                color = MaterialTheme.colors.secondary,
                 style = MaterialTheme.typography.body2.copy(textDecoration = TextDecoration.Underline)
             )
 
+            Spacer(modifier = Modifier.height(15.dp))
+            Text("Insert your pictures:")
 
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                ImageUploadButton(imageUri = imageUri1) {
+                    currentImageSelection = 1; galleryLauncher.launch("image/*")
+                }
+                ImageUploadButton(imageUri = imageUri2) {
+                    currentImageSelection = 2; galleryLauncher.launch("image/*")
+                }
+                ImageUploadButton(imageUri = imageUri3) {
+                    currentImageSelection = 3; galleryLauncher.launch("image/*")
+                }
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -438,7 +466,7 @@ fun ProfileSettingsScreen(
                     firstname = it
                     firstnameError = it.isBlank() // Update error state
                 },
-                label = { Text("First Name*", color = Color.Red) },
+                label = { Text("First Name*") },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -469,7 +497,7 @@ fun ProfileSettingsScreen(
             OutlinedTextField(
                 value = lastname,
                 onValueChange = { lastname = it },
-                label = { Text("Last Name", color = Color.Red) },
+                label = { Text("Last Name") },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -485,7 +513,7 @@ fun ProfileSettingsScreen(
                 OutlinedTextField(
                     value = "Age: ${age.toInt()}",
                     onValueChange = {},
-                    label = { Text(label, color = Color.Red) },
+                    label = { Text(label) },
                     readOnly = true, // Makes it non-editable
                     trailingIcon = {
                         Icon(Icons.Default.ArrowDropDown, "Select Age", Modifier.clickable { showSlider = !showSlider })
@@ -529,7 +557,7 @@ fun ProfileSettingsScreen(
                 OutlinedTextField(
                     value = selectedEthnicity,
                     onValueChange = { /* ReadOnly TextField */ },
-                    label = { Text("Ethnicity*", color = Color.Red) },
+                    label = { Text("Ethnicity*") },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -573,7 +601,7 @@ fun ProfileSettingsScreen(
                 OutlinedTextField(
                     value = selectedGender,
                     onValueChange = { /* ReadOnly TextField */ },
-                    label = { Text("Gender*", color = Color.Red) },
+                    label = { Text("Gender*") },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -617,7 +645,7 @@ fun ProfileSettingsScreen(
                 OutlinedTextField(
                     value = selectedProgram,
                     onValueChange = { /* ReadOnly TextField */ },
-                    label = { Text("Program*", color = Color.Red) },
+                    label = { Text("Program*") },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -660,7 +688,7 @@ fun ProfileSettingsScreen(
                 OutlinedTextField(
                     value = selectedProgramEmoji,
                     onValueChange = { /* ReadOnly TextField */ },
-                    label = { Text("Program Emoji*", color = Color.Red) },
+                    label = { Text("Program Emoji*") },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -697,7 +725,7 @@ fun ProfileSettingsScreen(
             OutlinedTextField(
                 value = hobby,
                 onValueChange = { hobby = it },
-                label = { Text("Hobby", color = Color.Red) },
+                label = { Text("Hobby") },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -712,7 +740,7 @@ fun ProfileSettingsScreen(
                 OutlinedTextField(
                     value = selectedHobbyEmoji,
                     onValueChange = { /* ReadOnly TextField */ },
-                    label = { Text("Hobby Emoji*", color = Color.Red) },
+                    label = { Text("Hobby Emoji*") },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -750,7 +778,7 @@ fun ProfileSettingsScreen(
             OutlinedTextField(
                 value = oneWord,
                 onValueChange = { oneWord = it },
-                label = { Text("One Word to describe you", color = Color.Red) },
+                label = { Text("One Word to describe you") },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -765,7 +793,7 @@ fun ProfileSettingsScreen(
                 OutlinedTextField(
                     value = selectedOneEmoji,
                     onValueChange = { /* ReadOnly TextField */ },
-                    label = { Text("An emoji that describes you*", color = Color.Red) },
+                    label = { Text("An emoji that describes you*") },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -807,7 +835,7 @@ fun ProfileSettingsScreen(
                 OutlinedTextField(
                     value = selectedPrompt,
                     onValueChange = { /* ReadOnly TextField */ },
-                    label = { Text("Prompt", color = Color.Red) },
+                    label = { Text("Prompt") },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -840,7 +868,7 @@ fun ProfileSettingsScreen(
             OutlinedTextField(
                 value = promptAnswer,
                 onValueChange = { promptAnswer = it },
-                label = { Text("Prompt Answer", color = Color.Red) },
+                label = { Text("Prompt Answer") },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -871,28 +899,28 @@ fun ProfileSettingsScreen(
                     }
                 )
             } else if (picError) {
-            AlertDialog(
-                onDismissRequest = {
-                    picError = false // Dismiss the dialog when the user clicks outside it or on the dismiss button
-                },
-                title = {
-                    Text(text = "Missing Information")
-                },
-                text = {
-                    Text("Please Insert a Profile Picture.")
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            picError = false // Dismiss dialog when the user clicks the confirm button
-                        },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E))
-                    ) {
-                        Text("OK")
+                AlertDialog(
+                    onDismissRequest = {
+                        picError = false // Dismiss the dialog when the user clicks outside it or on the dismiss button
+                    },
+                    title = {
+                        Text(text = "Missing Information")
+                    },
+                    text = {
+                        Text("Please Insert a Profile Picture.")
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                picError = false // Dismiss dialog when the user clicks the confirm button
+                            },
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E))
+                        ) {
+                            Text("OK")
+                        }
                     }
-                }
-            )
-        } else if (showSuccess) {
+                )
+            } else if (showSuccess) {
                 AlertDialog(
                     onDismissRequest = {
                         // Reset the flag when the dialog is dismissed
@@ -932,6 +960,8 @@ fun ProfileSettingsScreen(
                     if ( firstnameError || ethnicityError|| GenderError ||
                         ProgramError || pEmojiError || hEmojiError || oEmojiError) {
                         showError = true // Show the dialog when validation fails
+                    } else if (imageUri == null) {
+                        picError = true
                     } else {
                         val userId = auth.currentUser?.uid
                         if (userId == null) {
