@@ -237,9 +237,6 @@ fun ProfileSettingsScreen(
                             )
                         }
                     }
-                    .addOnFailureListener { exception ->
-                        Log.d("ProfileSettingsScreen", "get failed with ", exception)
-                    }
             } else {
                 Log.d("ProfileSettingsScreen", "User not authenticated or UID is null")
             }
@@ -786,6 +783,7 @@ fun ProfileSettingsScreen(
 
 
 
+
 //Image selection
 enum class ImageSource {
     Gallery,
@@ -831,7 +829,6 @@ fun ImageUploadButton(
         )
     }
 }
-
 
 
 
