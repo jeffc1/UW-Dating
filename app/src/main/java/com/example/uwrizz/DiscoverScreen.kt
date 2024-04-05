@@ -27,6 +27,11 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainContent() {
@@ -59,9 +64,36 @@ fun MainContent() {
         currentProfileIndex++
     }
 
+    @Composable
+    fun NoMoreProfilesScreen() {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Replace `R.drawable.no_more_profiles_image` with your actual image resource
+            Text(
+                text = "🥲", // Replace this with any emoji you like
+                fontSize = 64.sp, // Adjust size as needed
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "Oops... No more Profiles",
+                style = TextStyle(
+                    fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                ),
+                color = Color.Black
+            )
+        }
+    }
+
+
     // Check if we've reached the end of profiles
     if (currentProfileIndex >= profiles.size) {
-        Text("No more profiles")
+        NoMoreProfilesScreen()
         return
     }
 
