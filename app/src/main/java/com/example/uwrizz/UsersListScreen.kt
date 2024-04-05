@@ -1,5 +1,6 @@
 package com.example.uwrizz
 
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,10 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,30 +24,63 @@ import com.google.firebase.ktx.Firebase
 
 @Composable
 fun UsersListScreen(loggedInUserId: String, onUserClicked: (String) -> Unit) {
-    val users = remember { mutableStateListOf<User>() } // Replace with actual user fetching logic
+    val mutualLikes = remember { mutableStateListOf<User>() }
     val firestore = Firebase.firestore
+    var message by remember { mutableStateOf("") }
 
-    // Fetch users from Firestore
-    LaunchedEffect(key1 = "users_list") {
-        firestore.collection("users")
-            .get()
-            .addOnSuccessListener { result ->
-                for (document in result) {
-                    // Assuming 'User' corresponds to your Firestore user document structure
-                    val user = document.toObject<User>()
-                    if (user.userId != loggedInUserId) { // Exclude the current logged-in user from the list
-                        users.add(user)
-                    }
+    LaunchedEffect(key1 = "mutual_likes") {
+        // Fetch the list of users that the logged-in user has liked
+        firestore.collection("users").whereEqualTo("userId", loggedInUserId).get()
+            .addOnSuccessListener { loggedInUserSnapshot ->
+                // Extract the first document assuming there's only one user with that userId
+                val loggedInUserDocument = loggedInUserSnapshot.documents.firstOrNull()
+                val loggedInUser = loggedInUserDocument?.toObject<User>()
+                val usersLikedByLoggedInUser = loggedInUser?.likes ?: emptyList()
+
+                if (usersLikedByLoggedInUser.isNotEmpty()) {
+                    // Fetch the list of users who have liked the logged-in user
+                    firestore.collection("users").whereIn("userId", usersLikedByLoggedInUser).get()
+                        .addOnSuccessListener { usersWhoLikedSnapshot ->
+                            val usersWhoLikedLoggedInUser = usersWhoLikedSnapshot.documents.mapNotNull { it.toObject<User>() }
+                            // Intersect the userIds to find mutual likes
+                            val mutualLikesIds = usersWhoLikedLoggedInUser.filter { it.likes?.contains(loggedInUserId) == true }
+                                .map { it.userId }
+
+                            if (mutualLikesIds.isNotEmpty()) {
+                                firestore.collection("users").whereIn("userId", mutualLikesIds).get()
+                                    .addOnSuccessListener { mutualLikesResult ->
+                                        for (document in mutualLikesResult) {
+                                            val user = document.toObject<User>()
+                                            mutualLikes.add(user)
+                                        }
+                                    }
+                            } else {
+                                message = "No mutual likes yet. Start swiping to find matches!"
+                            }
+                        }
+                } else {
+                    message = "You haven't liked anyone yet. Start exploring profiles to find people you like!"
                 }
+            }
+            .addOnFailureListener {
+                message = "An error occurred while fetching your likes."
             }
     }
 
-    LazyColumn {
-        items(users) { user ->
-            UserCard(user, onUserClicked)
+    Column {
+        if (mutualLikes.isNotEmpty()) {
+            LazyColumn {
+                items(mutualLikes) { user ->
+                    UserCard(user, onUserClicked)
+                }
+            }
+        } else {
+            Text(text = message, modifier = Modifier.padding(16.dp))
         }
     }
 }
+
+
 
 //@Composable
 //fun UserListItem(user: User, onUserClicked: (String) -> Unit) {
