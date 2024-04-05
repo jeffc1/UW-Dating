@@ -104,7 +104,7 @@ fun ProfileSettingsScreen(
                     withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
                         append("Edit Survey")
                     }
-                    append(" to start matching. \n Click ")
+                    append(" to start matching. \nClick ")
                     withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
                         append("Save")
                     }
