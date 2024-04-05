@@ -30,91 +30,88 @@ import com.google.firebase.firestore.firestore
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainContent() {
-    val db = Firebase.firestore
     val auth = FirebaseAuth.getInstance()
-    var firstname by rememberSaveable { mutableStateOf("") }
-    var lastname by rememberSaveable { mutableStateOf("") }
-    var hobby by rememberSaveable { mutableStateOf("") }
-    var hobbyEmoji by rememberSaveable { mutableStateOf("") }
-    var program by rememberSaveable { mutableStateOf("") }
-    var programEmoji by rememberSaveable { mutableStateOf("") }
-    var age by rememberSaveable { mutableStateOf(18f) }
-    var oneWord by rememberSaveable { mutableStateOf("") }
-    var oneEmoji by rememberSaveable { mutableStateOf("") }
-    var prompt by rememberSaveable { mutableStateOf("") }
-    var promptAnswer by rememberSaveable { mutableStateOf("") }
-    var compatabilityScore by rememberSaveable { mutableIntStateOf(-1)}
+    val currentUserId = auth.currentUser?.uid
+    var profiles by remember { mutableStateOf<List<User>>(emptyList()) }
+    var currentProfileIndex by remember { mutableStateOf(0) }
 
-    remember {
-        val userId = auth.currentUser?.uid
-        if (userId != null) {
-            val usersCollection = db.collection("users")
-            val userRef = usersCollection.whereEqualTo("userId", userId)
-
-            userRef.get()
-                .addOnSuccessListener { querySnapshot ->
-                    if (!querySnapshot.isEmpty) {
-                        val user =
-                            querySnapshot.documents[0].toObject(BasicUserInfo::class.java)
-                        if (user != null) {
-                            // Update mutable state variables with user data
-                            firstname = user.firstName
-                            lastname = user.lastName
-                            age = user.age
-                            hobby = user.hobby
-                            hobbyEmoji = user.hobbyEmoji
-                            program = user.program
-                            programEmoji = user.programEmoji
-                            oneWord = user.oneWord
-                            oneEmoji = user.oneEmoji
-                            prompt = user.prompt
-                            promptAnswer = user.promptAnswer
-                        }
-                    } else {
-                        Log.d(
-                            "ProfileSettingsScreen",
-                            "No matching document found for the userId"
-                        )
-                    }
-                }
-                .addOnFailureListener { exception ->
-                    Log.d("ProfileSettingsScreen", "get failed with ", exception)
-                }
-        } else {
-            Log.d("ProfileSettingsScreen", "User not authenticated or UID is null")
+    // Fetch profiles once at the start and when the currentUserId changes
+    LaunchedEffect(currentUserId) {
+        currentUserId?.let { userId ->
+            fetchProfiles(userId) { fetchedProfiles ->
+                profiles = fetchedProfiles
+            }
         }
     }
+
+    // Function to handle like action
+    fun likeProfile(profileId: String) {
+        // Implement the Firestore logic to handle like action
+        likeProfileInFirestore(currentUserId!!, profileId)
+        // Move to next profile
+        currentProfileIndex++
+    }
+
+    // Function to handle dislike action
+    fun dislikeProfile() {
+        // Optionally implement the Firestore logic to handle dislike action
+        // For now, just move to next profile
+        currentProfileIndex++
+    }
+
+    // Check if we've reached the end of profiles
+    if (currentProfileIndex >= profiles.size) {
+        Text("No more profiles")
+        return
+    }
+
+    // Get the current profile to display
+    val currentProfile = profiles[currentProfileIndex]
+
     Column(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
-        // Your main content goes here
         TopAppBar(
-            title = { Text("Walter") },
+            title = { Text(currentProfile.firstName + " " + currentProfile.lastName) },
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Add a spacer to push the buttons to the bottom
-
-        // Row of 4 buttons at the bottom
+        // Main content with profile info
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .weight(12f)
                 .padding(16.dp)
         ) {
-            val description = "${firstname} ${lastname} | ${age.toInt().toString()}"
-            ScrollableCard(program, programEmoji, hobby, hobbyEmoji,
-                oneWord, oneEmoji, prompt, promptAnswer, compatabilityScore, description)
+            ScrollableCard(
+                currentProfile.program,
+                currentProfile.programEmoji,
+                currentProfile.hobby,
+                currentProfile.hobbyEmoji,
+                currentProfile.oneWord,
+                currentProfile.oneEmoji,
+                currentProfile.prompt,
+                currentProfile.promptAnswer,
+                currentProfile.firstName
+            )
         }
-        XButton()
+
+        // Like and Dislike Buttons
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            XButton(onClick = { dislikeProfile() })
+            HeartButton(onClick = { likeProfile(currentProfile.userId) })
+        }
     }
 }
 
+
 @Composable
-fun XButton() {
+fun XButton(onClick: () -> Unit) {
     FloatingActionButton(
-        onClick = { },
+        onClick = onClick,
         modifier = Modifier
             .padding(16.dp),
         contentColor = Color(0xFFE1474E),
@@ -125,9 +122,21 @@ fun XButton() {
 }
 
 @Composable
+fun HeartButton(onClick: () -> Unit) {
+    FloatingActionButton(
+        onClick = onClick,
+        modifier = Modifier.padding(16.dp),
+        contentColor = Color(0xFFE1474E),
+        containerColor = Color(0xFFF1F1F1),
+    ) {
+        Icon(Icons.Filled.Favorite, "Like")
+    }
+}
+
+@Composable
 fun ScrollableCard(
     program: String, programEmoji: String, hobby: String, hobbyEmoji: String, oneWord: String, oneEmoji: String,
-    prompt: String, promptAnswer: String, compatabilityScore: Int, description: String
+    prompt: String, promptAnswer: String, name: String
 ) {
     LazyColumn(
         modifier = Modifier
@@ -149,12 +158,43 @@ fun ScrollableCard(
                 }
             }
             CustomCard(prompt, promptAnswer)
-            CustomCard("Compatability Score:", compatabilityScore.toString())
             val imageResourceId = painterResource(id = R.drawable.walterwhite) // Obtaining resource ID
-            PhotoCard(imageResourceId, 200.dp, name = description)
+            PhotoCard(imageResourceId, 200.dp, name = name)
         }
     }
 }
+
+fun fetchProfiles(currentUserId: String, onResult: (List<User>) -> Unit) {
+    Firebase.firestore.collection("users")
+        .whereNotEqualTo("userId", currentUserId)
+        .get()
+        .addOnSuccessListener { result ->
+            val users = result.documents.mapNotNull { it.toObject(User::class.java) }
+            onResult(users)
+        }
+        .addOnFailureListener { exception ->
+            Log.d("DiscoverScreen", "Error getting users: ", exception)
+        }
+}
+
+fun likeProfileInFirestore(currentUserId: String, likedUserId: String) {
+    val db = Firebase.firestore
+    val currentUserDocRef = db.collection("users").document(currentUserId)
+
+    // Using a transaction to safely add a liked user
+    db.runTransaction { transaction ->
+        val snapshot = transaction.get(currentUserDocRef)
+        val currentLikes = snapshot.get("likes") as? List<String> ?: listOf()
+        if (likedUserId !in currentLikes) {
+            transaction.update(currentUserDocRef, "likes", currentLikes + likedUserId)
+        }
+    }.addOnSuccessListener {
+        Log.d("DiscoverScreen", "Profile successfully liked: $likedUserId")
+    }.addOnFailureListener { e ->
+        Log.w("DiscoverScreen", "Error liking profile: $likedUserId", e)
+    }
+}
+
 
 @Composable
 fun PhotoCard(image: Painter, imageSize: Dp, cardPadding: PaddingValues = PaddingValues(10.dp), name: String = "") {
@@ -239,23 +279,23 @@ fun CustomCard(title: String, content: String) {
                     fontSize = 20.sp // Adjust the size as needed
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             // Floating heart button (bottom right)
-            FloatingActionButton(
-                onClick = { /* Add your onClick logic here */ },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(5.dp)
-                    .size(40.dp),
-                contentColor = Color(0xFFE1474E),
-                containerColor = Color(0xFFF1F1F1), // Set the background color here
-                content = {
-                    Icon(Icons.Filled.Favorite, "Favorite")
-                },
-                // Set the size of the FAB here
-                // You can adjust the size as needed
-                // For example, to make it smaller, reduce the size value
-            )
+//            FloatingActionButton(
+//                onClick = { /* Add your onClick logic here */ },
+//                modifier = Modifier
+//                    .align(Alignment.BottomEnd)
+//                    .padding(5.dp)
+//                    .size(40.dp),
+//                contentColor = Color(0xFFE1474E),
+//                containerColor = Color(0xFFF1F1F1), // Set the background color here
+//                content = {
+//                    Icon(Icons.Filled.Favorite, "Favorite")
+//                },
+//                // Set the size of the FAB here
+//                // You can adjust the size as needed
+//                // For example, to make it smaller, reduce the size value
+//            )
         }
     }
 }
