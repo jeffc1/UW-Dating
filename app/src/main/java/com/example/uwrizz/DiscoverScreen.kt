@@ -90,7 +90,7 @@ fun MainContent() {
     ) {
         // Your main content goes here
         TopAppBar(
-            title = { Text("Walter") },
+            title = { Text(firstname) },
             modifier = Modifier.fillMaxWidth()
         )
 
