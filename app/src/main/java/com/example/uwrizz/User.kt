@@ -11,6 +11,7 @@ data class User(
     val ethnicity: String = "",
     val hobby: String = "",
     val age: Int = 18,
+    val likes: List<String> = listOf(),
     val hobbyEmoji: String = "",
     val oneWord: String = "",
     val oneEmoji: String = "",
