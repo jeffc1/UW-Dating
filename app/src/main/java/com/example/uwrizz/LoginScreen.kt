@@ -34,6 +34,7 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var showDialog by remember { mutableStateOf(false) }
     val logo = painterResource(R.drawable.uwrizzlogo)
     // Initialize Firebase Auth
     val auth = FirebaseAuth.getInstance()
@@ -138,6 +139,9 @@ fun LoginScreen(
         )
     }
 }
+
+
+
 
 @Composable
 fun GeeseApprovedDating() {

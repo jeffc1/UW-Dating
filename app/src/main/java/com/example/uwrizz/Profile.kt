@@ -37,12 +37,30 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.ktx.storage
+import androidx.compose.ui.text.style.TextDecoration
+
 import com.google.firebase.storage.storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontWeight
 
 
+
+
+fun shouldShowProfileCompletionDialog(context: Context): Boolean {
+    val prefs = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+    return prefs.getBoolean("ShowProfileCompletionDialog", true)
+}
+
+fun setProfileCompletionDialogShown(context: Context, shown: Boolean) {
+    val editor = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE).edit()
+    editor.putBoolean("ShowProfileCompletionDialog", shown)
+    editor.apply()
+}
 
 
 @Composable
@@ -54,11 +72,63 @@ fun ProfileSettingsScreen(
     onNavigateToSurvey: () -> Unit,
     context: Context
 ) {
+    val sharedPreferences = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+    val showDialog = remember { mutableStateOf(false) }
+
+    // This will be `true` if the dialog has never been shown, hence `!hasShownDialog`
+    val hasShownDialog = sharedPreferences.getBoolean("HasShownDialog", false)
+    if (!hasShownDialog) {
+        LaunchedEffect(Unit) {
+            showDialog.value = true
+            with(sharedPreferences.edit()) {
+                putBoolean("HasShownDialog", true)
+                apply()
+            }
+        }
+    }
+    if (showDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showDialog.value = false },
+            title = { Text("Welcome to the Profile Setup!") },
+            text = {
+                val message = buildAnnotatedString {
+                    append("Please complete all the mandatory fields in ")
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                        append("Profile Setting")
+                    }
+                    append(", ")
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                        append("Edit Preferences")
+                    }
+                    append(", and ")
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                        append("Edit Survey")
+                    }
+                    append(" to start matching. \n Click ")
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                        append("Save")
+                    }
+                    append(" after finishing each!")
+                }
+                Text(message)
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showDialog.value = false },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E))
+                ) {
+                    Text("Got it!")
+                }
+            }
+        )
+    }
+
     UWRizzTheme {
         val red = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = Color(0xFFE1474E),
             unfocusedBorderColor = Color(0xFFE1474E)
         )
+
 
         val db = Firebase.firestore
         val auth = FirebaseAuth.getInstance()
@@ -349,6 +419,14 @@ fun ProfileSettingsScreen(
                     }
                 }
             }
+            Text(
+                text = "Important Notice!",
+                modifier = Modifier
+                    .clickable { showDialog.value = true }
+                    .padding(vertical = 8.dp),
+                color = MaterialTheme.colors.secondary,
+                style = MaterialTheme.typography.body2.copy(textDecoration = TextDecoration.Underline)
+            )
 
             Spacer(modifier = Modifier.height(15.dp))
             Text("Insert your pictures:")
@@ -451,6 +529,11 @@ fun ProfileSettingsScreen(
                             age = age
                             showAgeSlider = false
                         },
+                        colors = SliderDefaults.colors(
+                            thumbColor = Color(0xFFFFA500),
+                            activeTrackColor = Color(0xFFFFA500).copy(alpha = ContentAlpha.high),
+                            inactiveTrackColor = Color(0xFFFFA500).copy(alpha = ContentAlpha.disabled), // Customizing to a lighter yellow for inactive part
+                        ),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
@@ -482,18 +565,7 @@ fun ProfileSettingsScreen(
                         )
                     },
                     readOnly = true,
-                    isError = ethnicityError, // Set error state for the field
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        // Define colors for different states
-                        textColor = Color.Black,
-                        disabledTextColor = Color.Gray,
-                        backgroundColor = Color.Transparent,
-                        cursorColor = Color.Black,
-                        errorCursorColor = MaterialTheme.colors.error,
-                        focusedBorderColor = MaterialTheme.colors.primary,
-                        unfocusedBorderColor = Color.Gray,
-                        errorBorderColor = MaterialTheme.colors.error,
-                    )
+                    colors = red
                 )
                 DropdownMenu(
                     expanded = expandedEthnicity,
@@ -829,7 +901,7 @@ fun ProfileSettingsScreen(
                     Text(text = "Missing Information")
                 },
                 text = {
-                    Text("Please Insert A Profile Picture.")
+                    Text("Please Insert a Profile Picture.")
                 },
                 confirmButton = {
                     Button(

@@ -53,6 +53,7 @@ private val Context.dataStore by preferencesDataStore(name = USER_PREFERENCES_NA
 //val loggedInUserId = "mwjnyI8mTRfT287LGP0Ac7PJnbt1"
 
 
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -162,7 +163,7 @@ fun MainScreen(client: HttpClient) {
         }
 
         LaunchedEffect(isLoggedIn) {
-            currentScreen = if (isLoggedIn) Screen.Home else Screen.Login
+            currentScreen = if (isLoggedIn) Screen.Profile else Screen.Login
         }
 
         if (!isLoggedIn) { // fix here after -----------------------------------------------------------------------------------------------

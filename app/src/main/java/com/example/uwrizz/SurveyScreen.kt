@@ -141,6 +141,7 @@ fun SurveyScreen(
     onNavigateToProfile: () -> Unit
 ) {
 
+    var surveyComplete by remember { mutableStateOf(true) }
     val scrollState = rememberScrollState()
 
     val QuestionOptions = listOf("Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree") // Define your options here
@@ -250,28 +251,38 @@ fun SurveyScreen(
 
         // Save button
         Button(
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E)),
             onClick = {
-                // Save survey responses to Firestore
-                saveSurveyResponses(questions.mapIndexed { index, question ->
-                    SurveyAnswer(
-                        question = question,
-                        answer = when (answers[index].value) {
-                            "Strongly Disagree" -> 1
-                            "Disagree" -> 2
-                            "Neutral" -> 3
-                            "Agree" -> 4
-                            "Strongly Agree" -> 5
-                            else -> 0
-                        }
-                    )
-                })
+                val allAnswered = answers.all { it.value != "Please select your answer" }
+                if (allAnswered) {
+                    surveyComplete = true
+                    saveSurveyResponses(questions.mapIndexed { index, question ->
+                        SurveyAnswer(
+                            question = question,
+                            answer = when (answers[index].value) {
+                                "Strongly Disagree" -> 1
+                                "Disagree" -> 2
+                                "Neutral" -> 3
+                                "Agree" -> 4
+                                "Strongly Agree" -> 5
+                                else -> 0 // This should never be hit due to the allAnswered check
+                            }
+                        )
+                    })
+                } else {
+                    surveyComplete = false // Set to false if not all questions are answered
+                }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp)
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE1474E)),
+            modifier = Modifier.fillMaxWidth().padding(top = 24.dp)
         ) {
             Text("Save")
+        }
+        if (!surveyComplete) {
+            Text(
+                "Please answer all questions before saving.",
+                color = Color.Red,
+                modifier = Modifier.padding(top = 8.dp)
+            )
         }
     }
 }
