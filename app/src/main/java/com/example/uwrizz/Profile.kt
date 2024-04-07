@@ -336,9 +336,9 @@ fun ProfileSettingsScreen(
         }
         Column(
             modifier = Modifier
-                .verticalScroll(scrollState) // This adds the scrolling behavior
-                .fillMaxHeight() // This makes the Column fill the available height
-                .padding(16.dp) // Replace with your desired padding
+                .verticalScroll(scrollState)
+                .fillMaxHeight()
+                .padding(16.dp)
         ) {
             Row(
                 modifier = Modifier
@@ -365,8 +365,7 @@ fun ProfileSettingsScreen(
                     imageUri?.let { uri ->
                         // Upload the selected image to Firebase Storage
                         val storageRef = storage.reference
-                        val profilePicRef = storageRef.child("profile_pictures/${auth.currentUser?.uid.toString()}.jpg") // Assuming you want to store the image with the user's UID as the filename
-                        // Before uploading, ensure that you have the persistable permissions for this URI.
+                        val profilePicRef = storageRef.child("profile_pictures/${auth.currentUser?.uid.toString()}.jpg")
                         try {
                             val uploadTask = profilePicRef.putFile(uri)
                             uploadTask.addOnSuccessListener {
@@ -483,7 +482,6 @@ fun ProfileSettingsScreen(
                     focusedBorderColor = Color.Red, // Default color for the border when focused
                     unfocusedBorderColor = Color.Red, // Default color for the border when not focused
                     errorBorderColor = MaterialTheme.colors.error, // Color for the border when in error state
-                    // You may need to set other colors as well, depending on your design requirements
                 )
             )
             if (firstnameError) {
