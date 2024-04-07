@@ -2,7 +2,6 @@
 
 package com.example.uwrizz
 
-// Import everything that's necessary
 import UserDatabaseHelper
 import PreferencesScreen
 import SurveyScreen
@@ -40,19 +39,10 @@ import kotlinx.serialization.json.Json
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 
-
-// Replace this with your application's package name
 private const val USER_PREFERENCES_NAME = "com.example.uwrizz"
 
-// Just after the package declaration
-//val Context.dataStore by preferencesDataStore(name = USER_PREFERENCES_NAME)
 
-// The dataStore by delegate
 private val Context.dataStore by preferencesDataStore(name = USER_PREFERENCES_NAME)
-
-//val loggedInUserId = "mwjnyI8mTRfT287LGP0Ac7PJnbt1"
-
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,12 +52,12 @@ class MainActivity : ComponentActivity() {
                 json(Json {
                     prettyPrint = true
                     isLenient = true
-                    coerceInputValues = true // Coerce incorrect JSON values instead of failing
-                    ignoreUnknownKeys = true // Ignore unknown keys in the JSON
+                    coerceInputValues = true
+                    ignoreUnknownKeys = true
                 })
             }
             install(WebSockets) {
-                // Configure WebSocket options if needed
+
             }
         }
         // Initialize the login state to logged out
@@ -75,7 +65,6 @@ class MainActivity : ComponentActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             dataStore.edit { settings ->
                 settings[booleanPreferencesKey("IS_LOGGED_IN")] = false
-
             }
         }
         setContent {
@@ -99,11 +88,9 @@ class MainActivity : ComponentActivity() {
                     dbHelper.addUser(
                         "admin",
                         "password"
-                    ) // Replace with your desired credentials
+                    )
                 }
             }
-            // Use the dataStore directly inside the MainScreen composable
-            // Pass the client to the MainScreen composable
             MainScreen(client)
         }
     }
@@ -115,7 +102,6 @@ fun MainScreen(client: HttpClient) {
 
     val user = FirebaseAuth.getInstance().currentUser
     user?.let {
-        // Name, email address, and profile photo Url
         val name = user.displayName
         val email = user.email
         val photoUrl = user.photoUrl
@@ -123,12 +109,9 @@ fun MainScreen(client: HttpClient) {
         // Check if user's email is verified
         val emailVerified = user.isEmailVerified
 
-        // The user's ID, unique to the Firebase project. Do NOT use this value to
-        // authenticate with your backend server, if you have one. Use
-        // FirebaseUser.getToken() instead.
+        // The user's ID, unique to the Firebase project.
         val uid = user.uid
     }
-
 
     UWRizzTheme {
         val scope = rememberCoroutineScope()
@@ -146,7 +129,8 @@ fun MainScreen(client: HttpClient) {
         Log.e("checking here :", "" + isLoggedIn)
 
         var currentScreen by remember { mutableStateOf(Screen.Login) }
-        var currentChatUserId by remember { mutableStateOf<String?>(null) }  // To keep track of the current user selected for chat
+        // To keep track of the current user selected for chat
+        var currentChatUserId by remember { mutableStateOf<String?>(null) }
         // Define a callback for when a user is clicked in the UsersListScreen
         val onUserClicked: (String) -> Unit = { clickedUserId ->
             // This should log the clicked user's ID to confirm it's being set
@@ -158,15 +142,17 @@ fun MainScreen(client: HttpClient) {
         }
 
         val onBackFromChatClicked: () -> Unit = {
-            currentChatUserId = null // Clear the selected user ID
-            currentScreen = Screen.Chat // Go back to the users list
+            // Clear the selected user ID
+            currentChatUserId = null
+            // Go back to the users list
+            currentScreen = Screen.Chat
         }
 
         LaunchedEffect(isLoggedIn) {
             currentScreen = if (isLoggedIn) Screen.Profile else Screen.Login
         }
 
-        if (!isLoggedIn) { // fix here after -----------------------------------------------------------------------------------------------
+        if (!isLoggedIn) {
             when (currentScreen) {
                 Screen.Login -> LoginScreen(
                     context = context,
@@ -185,13 +171,12 @@ fun MainScreen(client: HttpClient) {
                         // Update the current screen to navigate to Create Account screen
                         currentScreen = Screen.CreateAccount
                     },
-
                     )
 
                 Screen.CreateAccount -> CreateAccount(
                     context = context,
                     onLoginSuccess = {
-                        // Logic when account is created, might be similar to onLoginSuccess
+                        // Logic when account is created
                     },
                     onNavigateBack = {
                         // Navigate back to the login screen
@@ -204,8 +189,6 @@ fun MainScreen(client: HttpClient) {
             val onLogoutClicked: () -> Unit = {
                 // Sign out the user from Firebase Authentication
                 FirebaseAuth.getInstance().signOut()
-
-                // Perform any additional logout actions here, if needed
 
                 // Update the data store to reflect that the user is logged out
                 scope.launch {
@@ -239,22 +222,18 @@ fun MainScreen(client: HttpClient) {
                                 UsersListScreen(loggedInUserId = user?.uid.orEmpty(), onUserClicked = onUserClicked)
                             }
                         }
-
+                        // Likes Screen has been removed, and considered redundant.
 //                        Screen.Likes -> LikesScreen(exampleProfiles)
                         Screen.Profile -> ProfileSettingsScreen(
                             profileImage = ImageVector.vectorResource(R.drawable.ic_head), // Replace with your actual default image resource
                             onImageClick = {
                                 // Define what happens when the "add image" button is clicked
-                                // For example, opening a gallery or a photo picker
                             },
                             onNavigateToPreferences = {
-                                // Define what happens when "Edit Preferences" button is clicked
-                                // E.g., updating the state to navigate to the preferences screen
                                 currentScreen = Screen.Preferences
                             },
                             onImageSelected = { uri ->
-                                // Here you can handle the selected image URI.
-                                // For example, updating the UI state or uploading the image to a server.
+                                // Here handle the selected image URI.
                             },
                             onNavigateToSurvey = {
                                 currentScreen = Screen.Survey
@@ -264,20 +243,15 @@ fun MainScreen(client: HttpClient) {
 
                         Screen.Preferences -> PreferencesScreen(
                             onNavigateToProfile = {
-                                // Define what happens when "Edit Preferences" button is clicked
-                                // E.g., updating the state to navigate to the preferences screen
                                 currentScreen = Screen.Profile
                             }
                         )
 
                         Screen.Survey -> SurveyScreen(
                             onNavigateToProfile = {
-                                // Define what happens when "Edit Preferences" button is clicked
-                                // E.g., updating the state to navigate to the preferences screen
                                 currentScreen = Screen.Profile
                             }
                         )
-
                         else -> Unit
                     }
                 }
@@ -297,7 +271,7 @@ fun BottomNavigationBar(
         backgroundColor = Color(0xFF808080)
     ) {
         val lightGrey = Color(0xFFA8A8A8)
-        val selectedColor = Color.White // Change to your desired color for selected items
+        val selectedColor = Color.White
 
         BottomNavigationItem(
             icon = {
@@ -333,6 +307,7 @@ fun BottomNavigationBar(
             selected = currentScreen == Screen.Chat,
             onClick = { onNavigationItemSelected(Screen.Chat) }
         )
+        // removed likes from bottom menu
 //        BottomNavigationItem(
 //            icon = {
 //                Icon(
@@ -372,26 +347,19 @@ fun BottomNavigationBar(
                 Icon(
                     Icons.Filled.Logout,
                     contentDescription = "Logout",
-                    tint = lightGrey // Adjust the color as needed
+                    tint = lightGrey
                 )
             },
             label = {
                 Text(
                     "Logout",
-                    color = lightGrey // Adjust the color as needed
+                    color = lightGrey
                 )
             },
-            selected = false, // Since it's not selectable
+            selected = false,
             onClick = { onLogoutClicked() }
         )
     }
-}
-
-
-
-fun Icon(chat: Screen, contentDescription: String) {
-
-
 }
 
 enum class Screen {

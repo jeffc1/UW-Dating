@@ -263,6 +263,7 @@ fun ProfileSettingsScreen(
         val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let {
                 val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+
                 context.contentResolver.takePersistableUriPermission(
                     uri,
                     takeFlags)
