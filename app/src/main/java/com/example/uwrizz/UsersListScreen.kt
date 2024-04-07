@@ -84,7 +84,6 @@ fun UsersListScreen(loggedInUserId: String, onUserClicked: (String) -> Unit) {
 
 //@Composable
 //fun UserListItem(user: User, onUserClicked: (String) -> Unit) {
-//    // This could be your list item layout, for simplicity, let's make it a Text
 //    Text(
 //        text = ""+user.firstName + ": " + user.userId,
 //        modifier = Modifier

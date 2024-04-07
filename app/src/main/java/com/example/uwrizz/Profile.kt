@@ -225,7 +225,7 @@ fun ProfileSettingsScreen(
             "Health",
             "Mathematics",
             "Science"
-        ) // Define your options here
+        )
         var selectedProgram by rememberSaveable { mutableStateOf("Please select your program") }
         var ProgramError by remember { mutableStateOf(false) }
 
@@ -241,7 +241,7 @@ fun ProfileSettingsScreen(
             "South East Asian",
             "White/Caucasian",
             "Other"
-        ) // Define your options here
+        )
         var selectedEthnicity by rememberSaveable { mutableStateOf("Please select your ethnicity") }
         var ethnicityError by remember { mutableStateOf(false) }
         var showError by remember { mutableStateOf(false) }

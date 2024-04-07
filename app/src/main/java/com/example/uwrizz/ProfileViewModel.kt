@@ -10,7 +10,6 @@ class UserProfileViewModel(private val profileRepository: ProfileRepository) : V
     fun saveBasicUserInfo(basicUserInfo: BasicUserInfo) {
         viewModelScope.launch {
             profileRepository.saveBasicUserInfo(basicUserInfo) { success, message ->
-                // Here, you might want to update some LiveData to notify the UI of the operation's result
             }
         }
     }

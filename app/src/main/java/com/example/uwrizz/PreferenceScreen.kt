@@ -126,10 +126,10 @@ fun PreferencesScreen(
     var age2 by rememberSaveable { mutableStateOf(30) }
     var showAgeSlider by rememberSaveable { mutableStateOf(false) }
 
-    val genderOptions2 = listOf("Male", "Female", "Other") // Define your options here
+    val genderOptions2 = listOf("Male", "Female", "Other")
     var selectGenders2 by rememberSaveable { mutableStateOf(listOf<String>()) }
     var genderError2 by remember { mutableStateOf(false) }
-    val programOptions2 = listOf("Arts", "Engineering", "Environment", "Health", "Mathematics", "Science") // Define your options here
+    val programOptions2 = listOf("Arts", "Engineering", "Environment", "Health", "Mathematics", "Science")
     var selectedPrograms2 by rememberSaveable { mutableStateOf(listOf<String>()) }
     var programError2 by remember { mutableStateOf(false) }
     val ethnicityOptions2 = listOf("Black/African Descent", "East Asian", "Hispanic/Latino",
@@ -179,7 +179,7 @@ fun PreferencesScreen(
         modifier = Modifier
             .verticalScroll(scrollState) // This adds the scrolling behavior
             .fillMaxHeight() // This makes the Column fill the available height
-            .padding(16.dp) // Replace with your desired padding
+            .padding(16.dp)
     ) {
         Spacer(Modifier.weight(1f)) // This is used for layout purposes
         Button(

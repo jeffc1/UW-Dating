@@ -165,7 +165,6 @@ fun sendMessage(firestore: FirebaseFirestore, messageText: String, currentUserId
 }
 
 
-// The rest of your Composable functions (InputBar, MessageCard) remain the same.
 
 
 @Composable

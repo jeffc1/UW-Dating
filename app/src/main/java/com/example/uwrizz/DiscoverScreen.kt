@@ -71,9 +71,8 @@ fun MainContent() {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Replace `R.drawable.no_more_profiles_image` with your actual image resource
             Text(
-                text = "🥲", // Replace this with any emoji you like
+                text = "🥲",
                 fontSize = 64.sp, // Adjust size as needed
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
@@ -291,7 +290,6 @@ fun fetchProfiles(currentUserId: String, onResult: (List<User>) -> Unit) {
 }
 
 fun calculateCompatibilityScore(currentUserAnswers: List<Int>, matchAnswers: List<Int>): Int {
-    // Your logic for calculating the score goes here.
     // This is a simple example where we sum the absolute differences between answers.
     return currentUserAnswers.zip(matchAnswers) { a, b -> Math.abs(a - b) }.sum()
 }
@@ -418,7 +416,7 @@ fun CustomCard(title: String, content: String) {
             Spacer(modifier = Modifier.height(10.dp))
             // Floating heart button (bottom right)
 //            FloatingActionButton(
-//                onClick = { /* Add your onClick logic here */ },
+//                onClick = { /* Add onClick logic here */ },
 //                modifier = Modifier
 //                    .align(Alignment.BottomEnd)
 //                    .padding(5.dp)
@@ -429,8 +427,6 @@ fun CustomCard(title: String, content: String) {
 //                    Icon(Icons.Filled.Favorite, "Favorite")
 //                },
 //                // Set the size of the FAB here
-//                // You can adjust the size as needed
-//                // For example, to make it smaller, reduce the size value
 //            )
         }
     }

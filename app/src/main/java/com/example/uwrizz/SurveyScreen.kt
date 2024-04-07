@@ -218,7 +218,6 @@ fun SurveyScreen(
             .fillMaxHeight()
             .padding(16.dp)
     ) {
-        // Content of your screen
         Spacer(Modifier.weight(1f)) // This is used for layout purposes
         Button(
             onClick = onNavigateToProfile,
@@ -227,7 +226,7 @@ fun SurveyScreen(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) { // Align icon and text vertically
                 Icon(
-                    ImageVector.vectorResource(id = R.drawable.ic_arrow), // Replace with your icon's resource ID
+                    ImageVector.vectorResource(id = R.drawable.ic_arrow),
                     contentDescription = "Edit Profile" // Accessibility description
                 )
                 Spacer(Modifier.width(4.dp)) // Add some spacing between the icon and the text
