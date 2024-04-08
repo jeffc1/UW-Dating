@@ -40,31 +40,3 @@ data class SurveyAnswers(
     val userId: String = "",
     val answers: List<Int> = listOf()
 )
-
-class ProfileRepository {
-
-    private val db = Firebase.firestore // Firestore instance
-
-    fun saveBasicUserInfo(userInfo: BasicUserInfo, onComplete: (Boolean, String) -> Unit) {
-        db.collection("basicUserInfo").document(userInfo.userId)
-            .set(userInfo)
-            .addOnSuccessListener { onComplete(true, "User profile saved successfully.") }
-            .addOnFailureListener { exception -> onComplete(false, exception.localizedMessage ?: "Error saving profile.") }
-    }
-
-    fun saveUserPreference(userPreference: UserPreference, onComplete: (Boolean, String) -> Unit) {
-        db.collection("userPreferences").document(userPreference.userId)
-            .set(userPreference)
-            .addOnSuccessListener { onComplete(true, "Preferences saved successfully.") }
-            .addOnFailureListener { exception -> onComplete(false, exception.localizedMessage ?: "Error saving preferences.") }
-    }
-
-    fun saveSurveyAnswers(surveyAnswers: SurveyAnswers, onComplete: (Boolean, String) -> Unit) {
-        db.collection("surveyAnswers").document(surveyAnswers.userId)
-            .set(surveyAnswers)
-            .addOnSuccessListener { onComplete(true, "Survey answers saved successfully.") }
-            .addOnFailureListener { exception -> onComplete(false, exception.localizedMessage ?: "Error saving survey answers.") }
-    }
-
-    // Additional functions for retrieving and updating data can be added here.
-}
