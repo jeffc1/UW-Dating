@@ -27,8 +27,10 @@ fun UsersListScreen(loggedInUserId: String, onUserClicked: (String) -> Unit) {
     val mutualLikes = remember { mutableStateListOf<User>() }
     val firestore = Firebase.firestore
     var message by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = "mutual_likes") {
+        isLoading = true
         // Fetch the list of users that the logged-in user has liked
         firestore.collection("users").whereEqualTo("userId", loggedInUserId).get()
             .addOnSuccessListener { loggedInUserSnapshot ->
@@ -57,6 +59,7 @@ fun UsersListScreen(loggedInUserId: String, onUserClicked: (String) -> Unit) {
                             } else {
                                 message = "No mutual likes yet. Start swiping to find matches!"
                             }
+                            isLoading = false
                         }
                 } else {
                     message = "You haven't liked anyone yet. Start exploring profiles to find people you like!"
@@ -64,18 +67,25 @@ fun UsersListScreen(loggedInUserId: String, onUserClicked: (String) -> Unit) {
             }
             .addOnFailureListener {
                 message = "An error occurred while fetching your likes."
+                isLoading = false
             }
     }
 
     Column {
-        if (mutualLikes.isNotEmpty()) {
-            LazyColumn {
-                items(mutualLikes) { user ->
-                    UserCard(user, onUserClicked)
-                }
+        if (isLoading) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                CircularProgressIndicator() // Show loading spinner when isLoading is true
             }
         } else {
-            Text(text = message, modifier = Modifier.padding(16.dp))
+            if (mutualLikes.isNotEmpty()) {
+                LazyColumn {
+                    items(mutualLikes) { user ->
+                        UserCard(user, onUserClicked)
+                    }
+                }
+            } else {
+                Text(text = message, modifier = Modifier.padding(16.dp))
+            }
         }
     }
 }

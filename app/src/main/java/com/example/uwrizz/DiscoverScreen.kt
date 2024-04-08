@@ -39,12 +39,15 @@ fun MainContent() {
     val currentUserId = auth.currentUser?.uid
     var profiles by remember { mutableStateOf<List<User>>(emptyList()) }
     var currentProfileIndex by remember { mutableStateOf(0) }
+    var isLoading by remember { mutableStateOf(false) }
 
     // Fetch profiles once at the start and when the currentUserId changes
     LaunchedEffect(currentUserId) {
         currentUserId?.let { userId ->
+            isLoading = true
             fetchProfiles(userId) { fetchedProfiles ->
                 profiles = fetchedProfiles
+                isLoading = false
             }
         }
     }
@@ -78,7 +81,7 @@ fun MainContent() {
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Oops... No more Profiles",
+                text = "No more Profiles",
                 style = TextStyle(
                     fontFamily = FontFamily.SansSerif,
                     fontWeight = FontWeight.Bold,
@@ -90,11 +93,20 @@ fun MainContent() {
     }
 
 
-    // Check if we've reached the end of profiles
-    if (currentProfileIndex >= profiles.size) {
-        NoMoreProfilesScreen()
-        return
+    if (isLoading) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+            CircularProgressIndicator()
+            return
+        }
     }
+    else {
+        // Check if we've reached the end of profiles
+        if (currentProfileIndex >= profiles.size) {
+            NoMoreProfilesScreen()
+            return
+        }
+    }
+
 
     // Get the current profile to display
     val currentProfile = profiles[currentProfileIndex]
