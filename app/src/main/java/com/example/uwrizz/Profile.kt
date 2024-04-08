@@ -50,20 +50,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 
 
-
-
-fun shouldShowProfileCompletionDialog(context: Context): Boolean {
-    val prefs = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
-    return prefs.getBoolean("ShowProfileCompletionDialog", true)
-}
-
-fun setProfileCompletionDialogShown(context: Context, shown: Boolean) {
-    val editor = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE).edit()
-    editor.putBoolean("ShowProfileCompletionDialog", shown)
-    editor.apply()
-}
-
-
 @Composable
 fun ProfileSettingsScreen(
     profileImage: ImageVector, // Placeholder for profile image
@@ -1027,28 +1013,6 @@ fun ProfileSettingsScreen(
     }
 }
 
-
-
-
-
-
-//Image selection
-enum class ImageSource {
-    Gallery,
-    Camera
-}
-
-fun onImageSelected(source: ImageSource) {
-    // Handle image selection based on the source (Gallery or Camera)
-    when (source) {
-        ImageSource.Gallery -> {
-            // Logic to handle gallery image selection
-        }
-        ImageSource.Camera -> {
-            // Logic to handle camera image capture
-        }
-    }
-}
 
 @Composable
 fun ImageUploadButton(
