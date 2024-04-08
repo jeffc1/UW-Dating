@@ -59,6 +59,7 @@ fun ProfileSettingsScreen(
     onNavigateToSurvey: () -> Unit,
     context: Context
 ) {
+
     val sharedPreferences = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
     val showDialog = remember { mutableStateOf(false) }
 
@@ -246,33 +247,51 @@ fun ProfileSettingsScreen(
             return uriString?.let { Uri.parse(it) }
         }
 
+        fun uploadImageToFirebaseStorage(imageUri: Uri, imageIndex: Int) {
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+            val fileName = when(imageIndex) {
+                0 -> "profile_image"
+                1 -> "image_1"
+                2 -> "image_2"
+                3 -> "image_3"
+                else -> return // Invalid index, return early
+            }
+            val storageRef = Firebase.storage.reference.child("users/$userId/$fileName.jpg")
+
+            storageRef.putFile(imageUri)
+                .addOnSuccessListener {
+                    Log.d("ProfileSettingsScreen", "Image $fileName uploaded successfully")
+                    // If you need to do something after the upload, such as updating the user's profile with the new image URL, you can do it here.
+                }
+                .addOnFailureListener { e ->
+                    Log.e("ProfileSettingsScreen", "Failed to upload $fileName to Firebase", e)
+                }
+        }
+
         val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let {
-                val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-
-                context.contentResolver.takePersistableUriPermission(
-                    uri,
-                    takeFlags)
-                onImageSelected(uri)
-                when (currentImageSelection) {
-                    1 -> {
-                        imageUri1 = it; saveImageUri(it, "image_uri_1")
-                    }
-
-                    2 -> {
-                        imageUri2 = it; saveImageUri(it, "image_uri_2")
-                    }
-
-                    3 -> {
-                        imageUri3 = it; saveImageUri(it, "image_uri_3")
-                    }
-
-                    else -> {
-                        imageUri = it; saveImageUri(it, "profile_image_uri")
-                    }
+                // Requesting persistable permission
+                try {
+                    val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    context.contentResolver.takePersistableUriPermission(it, takeFlags)
+                } catch (e: SecurityException) {
+                    Log.e("ProfileSettingsScreen", "Error taking persistable URI permission", e)
                 }
+
+                // Determine which image URI to update based on currentImageSelection
+                when (currentImageSelection) {
+                    0 -> imageUri = it
+                    1 -> imageUri1 = it
+                    2 -> imageUri2 = it
+                    3 -> imageUri3 = it
+                }
+
+                // Upload the selected image to Firebase Storage
+                uploadImageToFirebaseStorage(it, currentImageSelection)
             }
         }
+
+
 
         val scrollState = rememberScrollState()
 
@@ -348,30 +367,32 @@ fun ProfileSettingsScreen(
                             galleryLauncher.launch("image/*") // Launch the gallery
                         }
                 ) {
-                    imageUri?.let { uri ->
-                        // Upload the selected image to Firebase Storage
-                        val storageRef = storage.reference
-                        val profilePicRef = storageRef.child("profile_pictures/${auth.currentUser?.uid.toString()}.jpg")
-                        try {
-                            val uploadTask = profilePicRef.putFile(uri)
-                            uploadTask.addOnSuccessListener {
-                                // Handle success
-                            }.addOnFailureListener { exception ->
-                                // Handle failure
-                            }
-                        } catch (e: SecurityException) {
-                            // Handle the exception, likely by requesting the user to re-select the image.
-                        }
-                        // Display the selected image
-                        Image(
-                            painter = rememberImagePainter(data = uri),
-                            contentDescription = "Profile picture",
-                            modifier = Modifier
-                                .size(120.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
-                    } ?: Icon(
+                    // jeff's image upload currently not working, so commenting out to prevent crash
+//                    imageUri?.let { uri ->
+//                        // Upload the selected image to Firebase Storage
+//                        val storageRef = storage.reference
+//                        val profilePicRef = storageRef.child("profile_pictures/${auth.currentUser?.uid.toString()}.jpg")
+//                        try {
+//                            val uploadTask = profilePicRef.putFile(uri)
+//                            uploadTask.addOnSuccessListener {
+//                                // Handle success
+//                            }.addOnFailureListener { exception ->
+//                                // Handle failure
+//                            }
+//                        } catch (e: SecurityException) {
+//                            // Handle the exception, likely by requesting the user to re-select the image.
+//                        }
+//                        // Display the selected image
+//                        Image(
+//                            painter = rememberImagePainter(data = uri),
+//                            contentDescription = "Profile picture",
+//                            modifier = Modifier
+//                                .size(120.dp)
+//                                .clip(CircleShape),
+//                            contentScale = ContentScale.Crop
+//                        )
+//                    } ?:
+                    Icon(
                         // If imageUri is null, display a default icon to indicate profile picture upload
                         imageVector = Icons.Default.AccountCircle, // Use the correct default icon here
                         contentDescription = "Profile picture placeholder",

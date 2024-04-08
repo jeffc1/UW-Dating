@@ -23,6 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
@@ -115,7 +116,8 @@ fun MainContent() {
         modifier = Modifier.fillMaxSize()
     ) {
         TopAppBar(
-            title = { Text(currentProfile.firstName + " " + currentProfile.lastName) },
+            title = { Text(currentProfile.firstName + " " + currentProfile.lastName
+                , color = Color.White)},
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -201,8 +203,13 @@ fun ScrollableCard(
                 }
             }
             CustomCard(prompt, promptAnswer)
-            val imageResourceId = painterResource(id = R.drawable.walterwhite) // Obtaining resource ID
-            PhotoCard(imageResourceId, 200.dp, name = name)
+//            val imageResourceId = painterResource(id = R.drawable.walterwhite) // Obtaining resource ID
+            PhotoCard(
+                image = Icons.Default.AccountCircle, // Use the AccountCircle icon here
+                imageSize = 200.dp,
+                name = name
+            )
+
         }
     }
 }
@@ -343,7 +350,7 @@ fun likeProfileInFirestore(currentUserId: String, likedUserId: String) {
 
 
 @Composable
-fun PhotoCard(image: Painter, imageSize: Dp, cardPadding: PaddingValues = PaddingValues(10.dp), name: String = "") {
+fun PhotoCard(image: ImageVector, imageSize: Dp, cardPadding: PaddingValues = PaddingValues(10.dp), name: String = "") {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -356,14 +363,14 @@ fun PhotoCard(image: Painter, imageSize: Dp, cardPadding: PaddingValues = Paddin
                 .padding(cardPadding) // Add padding
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                // Image with ContentScale.Crop to maintain aspect ratio
+                // Replace Icon with Image composable to properly display the ImageVector
                 Image(
-                    painter = image,
-                    contentDescription = "Photo",
+                    imageVector = image,
+                    contentDescription = "Profile picture placeholder",
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth(),
-                    contentScale = ContentScale.Crop // Crop the image to fit the 1:1 aspect ratio
+                    contentScale = ContentScale.Fit // Use Fit to maintain aspect ratio
                 )
 
                 // Name text at the bottom
@@ -381,6 +388,7 @@ fun PhotoCard(image: Painter, imageSize: Dp, cardPadding: PaddingValues = Paddin
         }
     }
 }
+
 
 
 

@@ -283,7 +283,7 @@ fun BottomNavigationBar(
             },
             label = {
                 Text(
-                    "Home",
+                    "Feed",
                     color = if (currentScreen == Screen.Home) selectedColor else lightGrey
                 )
             },
