@@ -1,21 +1,29 @@
-Release Notes Feb-8-2024
-Release Version 0.1.1
+📋 Overview
+UWRizz is a dating and connection platform exclusively designed for University of Waterloo students. Built with Kotlin and Jetpack Compose, the app addresses the unique social challenges faced by UW students, including co-op rotations, demanding academics, and a dispersed social environment.
+✨ Features
 
+UW Student Verification: Secure signup process requiring @uwaterloo.edu email verification
+Custom Profile Creation: Detailed profiles highlighting academic programs, interests, etc.
+Thoughtful Matching Algorithm: Connect with others based on academic interests, hobbies, etc.
+Real-time Messaging: Secure in-app communication with message status indicators
+Non-Superficial Focus: Designed to prioritize compatibility and shared experiences over appearance
 
-- Polish front end: https://git.uwaterloo.ca/j37chiu1/team-101-6/-/issues/10
-- Login: https://git.uwaterloo.ca/j37chiu1/team-101-6/-/issues/9
-- Chat functionality: https://git.uwaterloo.ca/j37chiu1/team-101-6/-/issues/8
-- Backend/database: https://git.uwaterloo.ca/j37chiu1/team-101-6/-/issues/7
-Release Notes Feb-2-2024
+🛠️ Technologies Used
+Frontend
 
-Release Version 0.1.0
+Kotlin as the primary programming language
+Jetpack Compose for modern declarative UI
+Material Design Components for consistent user experience
+Navigation Compose for screen navigation
 
-- Front end work on the following:
-- likes page: https://git.uwaterloo.ca/j37chiu1/team-101-6/-/issues/6
-- preference page: https://git.uwaterloo.ca/j37chiu1/team-101-6/-/issues/5
-- profile settings page: https://git.uwaterloo.ca/j37chiu1/team-101-6/-/issues/4
-- chat page: https://git.uwaterloo.ca/j37chiu1/team-101-6/-/issues/3
-- main page: https://git.uwaterloo.ca/j37chiu1/team-101-6/-/issues/2
+Backend & Data
+Firebase Realtime Database for data storage and real-time communication
+Firebase Authentication for secure user verification
+Firebase Cloud Storage for profile media
 
+Architecture & Patterns
 
-- installer (apk) was generated on March 8. [Link](https://git.uwaterloo.ca/j37chiu1/team-101-6/-/blob/main/app-debug.apk)
+Model-View-Controller (MVC) architecture
+Repository Pattern for data operations
+Singleton Pattern for shared resources
+Observer Pattern for reactive UI updates
